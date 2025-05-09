@@ -19,9 +19,18 @@ namespace Game.Scripts.UI
         
             if (_playerHealth != null)
             {
+                // 이벤트 연결
                 _playerHealth.OnHealthChanged += UpdateHealthUI;
+                
+                // 슬라이더 초기 설정
                 _healthSlider.maxValue = _playerHealth.MaxHealth;
                 _healthSlider.value = _playerHealth.CurrentHealth;
+                
+                Debug.Log($"플레이어 체력 UI 초기화: {_playerHealth.CurrentHealth}/{_playerHealth.MaxHealth}");
+            }
+            else
+            {
+                Debug.LogError("PlayerHealth 컴포넌트를 찾을 수 없습니다.");
             }
         }
     
@@ -30,7 +39,19 @@ namespace Game.Scripts.UI
         /// </summary>
         private void UpdateHealthUI(int health)
         {
-            _healthSlider.value = health;
+            if (_healthSlider != null)
+            {
+                _healthSlider.value = health;
+                Debug.Log($"체력 UI 업데이트: {health}");
+            }
+        }
+        
+        private void OnDestroy()
+        {
+            if (_playerHealth != null)
+            {
+                _playerHealth.OnHealthChanged -= UpdateHealthUI;
+            }
         }
     }
 }

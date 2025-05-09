@@ -52,7 +52,7 @@ namespace Game.Scripts.Characters.Enemies
         /// </summary>
         private void ExecutePattern()
         {
-            switch (Random.Range(0, 5)) // 5개 패턴
+            switch (Random.Range(0, 8)) // 8개 패턴
             {
                 case 0:
                     StartCoroutine(ShootProjectile());
@@ -71,6 +71,12 @@ namespace Game.Scripts.Characters.Enemies
                     break;
                 case 5:
                     StartCoroutine(MultiAreaAttack());
+                    break;
+                case 6:
+                    StartCoroutine(DiagonalAttackPattern());
+                    break;
+                case 7:
+                    StartCoroutine(DiagonalCrossPattern());
                     break;
             }
         }
@@ -204,7 +210,6 @@ namespace Game.Scripts.Characters.Enemies
         /// <summary>
         /// 패턴 4 : 연속 투사체 발사
         /// </summary>
-        /// <returns></returns>
         private IEnumerator RapidFirePattern()
         {
             Debug.Log("적: 연속 발사");
@@ -221,7 +226,7 @@ namespace Game.Scripts.Characters.Enemies
         }
     
         /// <summary>
-        ///  패턴 5 : 십자 공격
+        /// 패턴 5 : 십자 공격
         /// </summary>
         private IEnumerator CrossAttackPattern()
         {
@@ -263,6 +268,7 @@ namespace Game.Scripts.Characters.Enemies
                 Destroy(tile);
             }
         }
+        
         /// <summary>
         /// 패턴 6 : 연속 영역 공격
         /// </summary>
@@ -313,6 +319,139 @@ namespace Game.Scripts.Characters.Enemies
                 }
         
                 yield return new WaitForSeconds(0.3f);
+            }
+        }
+        
+        /// <summary>
+        /// 패턴 7 : 대각선 공격
+        /// </summary>
+        private IEnumerator DiagonalAttackPattern()
+        {
+            Debug.Log("적: 대각선 공격 준비");
+            
+            // 플레이어 위치
+            _gridSystem.GetXY(_player.transform.position, out int playerX, out int playerY);
+            
+            // 대각선 경고 생성
+            List<GameObject> warningTiles = new List<GameObject>();
+            
+            // 우상단-좌하단 대각선
+            int offset = playerY - playerX;
+            for (int x = 0; x < _gridSystem.Width; x++)
+            {
+                int y = x + offset;
+                if (_gridSystem.IsValidPosition(x, y))
+                {
+                    Vector3 pos = _gridSystem.GetWorldPosition(x, y);
+                    warningTiles.Add(Instantiate(warningTilePrefab, pos, Quaternion.identity));
+                }
+            }
+            
+            // 좌상단-우하단 대각선
+            offset = playerY + playerX;
+            for (int x = 0; x < _gridSystem.Width; x++)
+            {
+                int y = offset - x;
+                if (_gridSystem.IsValidPosition(x, y))
+                {
+                    Vector3 pos = _gridSystem.GetWorldPosition(x, y);
+                    warningTiles.Add(Instantiate(warningTilePrefab, pos, Quaternion.identity));
+                }
+            }
+            
+            yield return new WaitForSeconds(0.8f);
+            
+            // 공격 실행
+            _gridSystem.GetXY(_player.transform.position, out int currentX, out int currentY);
+            
+            // 우상단-좌하단 대각선 검사
+            bool isOnDiagonal1 = (currentY - currentX) == (playerY - playerX);
+            
+            // 좌상단-우하단 대각선 검사
+            bool isOnDiagonal2 = (currentY + currentX) == (playerY + playerX);
+            
+            if (isOnDiagonal1 || isOnDiagonal2)
+            {
+                _playerHealth.TakeDamage(15);
+            }
+            
+            // 제거
+            foreach (GameObject tile in warningTiles)
+            {
+                Destroy(tile);
+            }
+        }
+        
+        /// <summary>
+        /// 패턴 8 : 대각선 후 십자 공격 패턴
+        /// </summary>
+        private IEnumerator DiagonalCrossPattern()
+        {
+            Debug.Log("적: 대각선-십자 연속 공격 준비");
+            
+            // 플레이어 위치
+            _gridSystem.GetXY(_player.transform.position, out int playerX, out int playerY);
+            
+            // 1단계: 대각선 경고 생성
+            List<GameObject> warningTiles = new List<GameObject>();
+            
+            // 우상단-좌하단 대각선
+            int offset = playerY - playerX;
+            for (int x = 0; x < _gridSystem.Width; x++)
+            {
+                int y = x + offset;
+                if (_gridSystem.IsValidPosition(x, y))
+                {
+                    Vector3 pos = _gridSystem.GetWorldPosition(x, y);
+                    warningTiles.Add(Instantiate(warningTilePrefab, pos, Quaternion.identity));
+                }
+            }
+            
+            yield return new WaitForSeconds(0.8f);
+            
+            // 대각선 공격 실행
+            _gridSystem.GetXY(_player.transform.position, out int currentX, out int currentY);
+            bool isOnDiagonal = (currentY - currentX) == (playerY - playerX);
+            
+            if (isOnDiagonal)
+            {
+                _playerHealth.TakeDamage(10);
+            }
+            
+            // 경고 타일 제거
+            foreach (GameObject tile in warningTiles)
+            {
+                Destroy(tile);
+            }
+            
+            // 새로운 플레이어 위치 가져오기
+            _gridSystem.GetXY(_player.transform.position, out playerX, out playerY);
+            
+            // 2단계: 십자 경고 생성
+            warningTiles = new List<GameObject>();
+            
+            yield return new WaitForSeconds(0.3f);
+            
+            // 가로 방향
+            for (int x = 0; x < _gridSystem.Width; x++)
+            {
+                Vector3 pos = _gridSystem.GetWorldPosition(x, playerY);
+                warningTiles.Add(Instantiate(warningTilePrefab, pos, Quaternion.identity));
+            }
+            
+            yield return new WaitForSeconds(0.8f);
+            
+            // 십자 공격 실행
+            _gridSystem.GetXY(_player.transform.position, out currentX, out currentY);
+            if (currentY == playerY)
+            {
+                _playerHealth.TakeDamage(15);
+            }
+            
+            // 타일 제거
+            foreach (GameObject tile in warningTiles)
+            {
+                Destroy(tile);
             }
         }
     }

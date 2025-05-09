@@ -23,6 +23,9 @@ namespace Game.Scripts.Characters.Player
         private void Start()
         {
             _currentHealth = _maxHealth;
+            
+            // 초기 체력 상태 이벤트 발생
+            OnHealthChanged?.Invoke(_currentHealth);
         }
         
         /// <summary>
@@ -57,6 +60,7 @@ namespace Game.Scripts.Characters.Player
         /// </summary>
         private void Die()
         {
+            Debug.Log("플레이어 사망");
             OnPlayerDeath?.Invoke();
         }
     }
