@@ -1,7 +1,7 @@
+using UnityEngine;
+
 namespace Game.Scripts.Characters.Enemies
 {
-    using UnityEngine;
-
     /// <summary>
     /// 모든 적 캐릭터의 기본 클래스
     /// </summary>

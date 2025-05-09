@@ -1,9 +1,9 @@
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+
 namespace Game.Scripts.Tiles
 {
-    using UnityEngine;
-    using TMPro;
-    using UnityEngine.UI;
-    
     /// <summary>
     /// 타일의 모든 시각적 표현 관리
     /// </summary>

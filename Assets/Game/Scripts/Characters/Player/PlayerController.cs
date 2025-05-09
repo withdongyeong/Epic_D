@@ -1,10 +1,10 @@
+using System.Collections;
+using Game.Scripts.Core;
+using Game.Scripts.Tiles;
+using UnityEngine;
+
 namespace Game.Scripts.Characters.Player
 { 
-    using System.Collections;
-    using UnityEngine;
-    using Core;
-    using Tiles;
-
     /// <summary>
     /// 플레이어 이동 및 타일 상호작용 관리
     /// </summary>

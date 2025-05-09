@@ -1,8 +1,8 @@
+using Game.Scripts.Tiles;
+using UnityEngine;
+
 namespace Game.Scripts.Core
 {
-    using UnityEngine;
-    using Tiles;
-    
     /// <summary>
     /// 게임의 격자 시스템을 관리하는 클래스
     /// </summary>

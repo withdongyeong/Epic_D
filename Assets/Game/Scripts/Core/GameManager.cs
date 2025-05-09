@@ -1,19 +1,23 @@
+using Game.Scripts.Characters.Enemies;
+using Game.Scripts.Tiles;
+using UnityEngine;
+
 namespace Game.Scripts.Core
 {
-    using UnityEngine;
-    using Tiles;
-
     public class GameManager : MonoBehaviour
     {
         public GameObject playerPrefab;
         public GameObject attackTilePrefab;
         private GridSystem _gridSystem;
+        public GameObject enemyPrefab;
+        private BaseEnemy _enemy;
     
         private void Start()
         {
             _gridSystem = GetComponent<GridSystem>();
             InitializeGrid();
             SpawnPlayer();
+            SpawnEnemy();
         }
     
         private void InitializeGrid()
@@ -33,13 +37,24 @@ namespace Game.Scripts.Core
             GameObject tileObj = Instantiate(tilePrefab, position, Quaternion.identity);
             BaseTile tile = tileObj.GetComponent<BaseTile>();
             _gridSystem.RegisterTile(tile, x, y);
-            Debug.Log($"타일 등록: ({x}, {y}), 타일: {tile}");
         }
-    
+        /// <summary>
+        /// 플레이어 캐릭터 생성
+        /// </summary>
         private void SpawnPlayer()
         {
             Vector3 position = _gridSystem.GetWorldPosition(0, 0);
             Instantiate(playerPrefab, position, Quaternion.identity);
+        }
+        
+        /// <summary>
+        /// 적 캐릭터 생성
+        /// </summary>
+        private void SpawnEnemy()
+        {
+            Vector3 enemyPosition = new Vector3(15f, 4f, 0f); // 오른쪽 위치
+            GameObject enemyObj = Instantiate(enemyPrefab, enemyPosition, Quaternion.identity);
+            _enemy = enemyObj.GetComponent<BaseEnemy>();
         }
     }   
 }

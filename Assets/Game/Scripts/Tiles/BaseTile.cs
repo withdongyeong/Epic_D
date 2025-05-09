@@ -1,8 +1,8 @@
+using UnityEngine;
+using System;
+
 namespace Game.Scripts.Tiles
 {
-    using UnityEngine;
-    using System;
-
     /// <summary>
     /// 모든 타일의 기본 클래스
     /// </summary>
