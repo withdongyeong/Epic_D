@@ -57,7 +57,6 @@ namespace Game.Scripts.Characters.Player
         /// </summary>
         private void Die()
         {
-            Debug.Log("플레이어 사망");
             OnPlayerDeath?.Invoke();
         }
     }

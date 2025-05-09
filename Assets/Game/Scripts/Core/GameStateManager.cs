@@ -18,6 +18,7 @@ namespace Game.Scripts.Core
 
         private static GameStateManager _instance;
         private GameState _currentState;
+        private TimeScaleManager _timeScaleManager;
 
         // 이벤트 정의
         public event Action<GameState> OnGameStateChanged;
@@ -34,6 +35,7 @@ namespace Game.Scripts.Core
                     {
                         GameObject obj = new GameObject("GameStateManager");
                         _instance = obj.AddComponent<GameStateManager>();
+                        DontDestroyOnLoad(obj);
                     }
                 }
                 return _instance;
@@ -53,8 +55,11 @@ namespace Game.Scripts.Core
             _instance = this;
             DontDestroyOnLoad(gameObject);
             
+            // 타임스케일 매니저 참조 확보
+            _timeScaleManager = TimeScaleManager.Instance;
+            
             // 기본 상태 설정
-            SetGameState(GameState.MainMenu);
+            SetGameState(GameState.Playing);
         }
 
         /// <summary>
@@ -63,9 +68,21 @@ namespace Game.Scripts.Core
         public void SetGameState(GameState newState)
         {
             _currentState = newState;
-            OnGameStateChanged?.Invoke(newState);
             
-            Debug.Log($"게임 상태 변경: {newState}");
+            // 상태에 따른 타임스케일 조절
+            switch (newState)
+            {
+                case GameState.Playing:
+                    Time.timeScale = 1.0f;
+                    break;
+                case GameState.Victory:
+                case GameState.Defeat:
+                    Time.timeScale = 0.0f;
+                    break;
+            }
+            
+            OnGameStateChanged?.Invoke(newState);
+            Debug.Log($"게임 상태 변경: {newState}, 타임스케일: {Time.timeScale}");
         }
 
         /// <summary>
@@ -97,6 +114,7 @@ namespace Game.Scripts.Core
         /// </summary>
         public void RestartGame()
         {
+            _timeScaleManager.ResetTimeScale();
             SetGameState(GameState.Playing);
         }
     }

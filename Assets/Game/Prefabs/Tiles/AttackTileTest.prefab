@@ -521,8 +521,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uC900\uBE44 \uC644\uB8CC!"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: d31711ea40acfdd45bb401d1ff1cf482, type: 2}
-  m_sharedMaterial: {fileID: -9095057266681358092, guid: d31711ea40acfdd45bb401d1ff1cf482, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 9128b553ed8f0104c859cb5404b56ba3, type: 2}
+  m_sharedMaterial: {fileID: 5446056761023578119, guid: 9128b553ed8f0104c859cb5404b56ba3, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

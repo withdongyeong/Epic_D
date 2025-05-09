@@ -12,12 +12,12 @@ namespace Game.Scripts.Characters.Enemies
     /// </summary>
     public class FixedEnemy : BaseEnemy
     {
-        private float _attackCooldown = 3f;
+        private float _attackCooldown = 2f;
         private int _currentPattern;
         private GridSystem _gridSystem;
         private PlayerController _player;
         private PlayerHealth _playerHealth;
-        private float _patternCooldown = 1.0f; // 패턴 간 딜레이
+        private float _patternCooldown = 0.5f; // 패턴 간 딜레이
         
         public GameObject projectilePrefab;
         public GameObject warningTilePrefab;

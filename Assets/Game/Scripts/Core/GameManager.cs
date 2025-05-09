@@ -17,72 +17,20 @@ namespace Game.Scripts.Core
         private GridSystem _gridSystem;
         private BaseEnemy _enemy;
         private PlayerController _player;
+        private PlayerHealth _playerHealth;
         private GameStateManager _gameStateManager;
         
-        private void Awake()
-        {
-            _gameStateManager = GameStateManager.Instance;
-            _gameStateManager.OnGameStateChanged += HandleGameStateChanged;
-        }
-    
-        private void Start()
+        void Start()
         {
             _gridSystem = GetComponent<GridSystem>();
+            _gameStateManager = GameStateManager.Instance;
+            
             InitializeGrid();
-        }
-    
-        /// <summary>
-        /// 게임 상태 변경 처리
-        /// </summary>
-        private void HandleGameStateChanged(GameStateManager.GameState newState)
-        {
-            switch (newState)
-            {
-                case GameStateManager.GameState.MainMenu:
-                    // 게임 요소 비활성화
-                    CleanupGameElements();
-                    break;
-                    
-                case GameStateManager.GameState.Playing:
-                    // 게임 요소 초기화 및 활성화
-                    SetupGame();
-                    break;
-                    
-                case GameStateManager.GameState.Victory:
-                case GameStateManager.GameState.Defeat:
-                    // 필요한 경우 게임 요소 정리
-                    break;
-            }
-        }
-        
-        /// <summary>
-        /// 게임 시작 시 필요한 설정
-        /// </summary>
-        private void SetupGame()
-        {
-            CleanupGameElements(); // 기존 요소 정리
             SpawnPlayer();
             SpawnEnemy();
-        }
-        
-        /// <summary>
-        /// 게임 요소 정리
-        /// </summary>
-        private void CleanupGameElements()
-        {
-            // 기존 플레이어 제거
-            if (_player != null)
-            {
-                Destroy(_player.gameObject);
-                _player = null;
-            }
             
-            // 기존 적 제거
-            if (_enemy != null)
-            {
-                Destroy(_enemy.gameObject);
-                _enemy = null;
-            }
+            // 게임 시작 상태로 설정
+            _gameStateManager.StartGame();
         }
     
         private void InitializeGrid()
@@ -112,6 +60,13 @@ namespace Game.Scripts.Core
             Vector3 position = _gridSystem.GetWorldPosition(0, 0);
             GameObject playerObj = Instantiate(playerPrefab, position, Quaternion.identity);
             _player = playerObj.GetComponent<PlayerController>();
+            _playerHealth = playerObj.GetComponent<PlayerHealth>();
+            
+            // 플레이어 사망 이벤트 연결
+            if (_playerHealth != null)
+            {
+                _playerHealth.OnPlayerDeath += HandlePlayerDeath;
+            }
         }
         
         /// <summary>
@@ -122,13 +77,41 @@ namespace Game.Scripts.Core
             Vector3 enemyPosition = new Vector3(15f, 4f, 0f); // 오른쪽 위치
             GameObject enemyObj = Instantiate(enemyPrefab, enemyPosition, Quaternion.identity);
             _enemy = enemyObj.GetComponent<BaseEnemy>();
+            
+            // 적 사망 이벤트 연결
+            if (_enemy != null)
+            {
+                _enemy.OnEnemyDeath += HandleEnemyDeath;
+            }
+        }
+        
+        /// <summary>
+        /// 플레이어 사망 처리
+        /// </summary>
+        private void HandlePlayerDeath()
+        {
+            _gameStateManager.LoseGame();
+        }
+        
+        /// <summary>
+        /// 적 사망 처리
+        /// </summary>
+        private void HandleEnemyDeath()
+        {
+            _gameStateManager.WinGame();
         }
         
         private void OnDestroy()
         {
-            if (_gameStateManager != null)
+            // 이벤트 연결 해제
+            if (_playerHealth != null)
             {
-                _gameStateManager.OnGameStateChanged -= HandleGameStateChanged;
+                _playerHealth.OnPlayerDeath -= HandlePlayerDeath;
+            }
+            
+            if (_enemy != null)
+            {
+                _enemy.OnEnemyDeath -= HandleEnemyDeath;
             }
         }
     }   
