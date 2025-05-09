@@ -1,109 +1,112 @@
-using UnityEngine;
-using System;
-
-/// <summary>
-/// 모든 타일의 기본 클래스
-/// </summary>
-public class BaseTile : MonoBehaviour
+namespace Game.Scripts.Tiles
 {
-    public enum TileState
-    {
-        Charging,  // 충전/쿨다운
-        Ready,     // 준비 완료
-        Activated  // 발동 중
-    }
-    
-    private float chargeTime = 3f;
-    private float cooldownTime = 1f;
-    
-    private TileState currentState = TileState.Charging;
-    private float stateTimer;
-    
-    // Getters & Setters
-    public float ChargeTime { get => chargeTime; set => chargeTime = value; }
-    public float CooldownTime { get => cooldownTime; set => cooldownTime = value; }
-    
-    // 이벤트 정의
-    public event Action<BaseTile> OnReady;
-    public event Action<BaseTile> OnActivated;
-    
-    protected virtual void Update()
-    {
-        UpdateState();
-    }
-    
+    using UnityEngine;
+    using System;
+
     /// <summary>
-    /// 타일 상태 업데이트 및 상태 전환 관리
+    /// 모든 타일의 기본 클래스
     /// </summary>
-    protected virtual void UpdateState()
+    public class BaseTile : MonoBehaviour
     {
-        switch (currentState)
+        public enum TileState
         {
-            case TileState.Charging:
-                stateTimer += Time.deltaTime;
-                if (stateTimer >= chargeTime)
-                {
-                    SetState(TileState.Ready);
-                }
-                break;
+            Charging,  // 충전/쿨다운
+            Ready,     // 준비 완료
+            Activated  // 발동 중
+        }
         
-            case TileState.Ready:
-                // 준비 상태 유지
-                break;
+        private float _chargeTime = 3f;
+        private float _cooldownTime = 1f;
         
-            case TileState.Activated:
-                // 발동 후 즉시 충전 상태로
-                SetState(TileState.Charging);
-                stateTimer = 0f;
-                break;
-        }
-    }
-    
-    /// <summary>
-    /// 타일 발동 - 플레이어가 밟을 때 호출
-    /// </summary>
-    public virtual void Activate()
-    {
-        if (currentState == TileState.Ready)
-        {
-            SetState(TileState.Activated);
-            OnActivated?.Invoke(this);
-        }
-    }
-    
-    /// <summary>
-    /// 타일 상태 변경 처리
-    /// </summary>
-    protected void SetState(TileState newState)
-    {
-        currentState = newState;
-        stateTimer = 0f;
+        private TileState _currentState = TileState.Charging;
+        private float _stateTimer;
         
-        if (newState == TileState.Ready)
+        // Getters & Setters
+        public float ChargeTime { get => _chargeTime; set => _chargeTime = value; }
+        public float CooldownTime { get => _cooldownTime; set => _cooldownTime = value; }
+        
+        // 이벤트 정의
+        public event Action<BaseTile> OnReady;
+        public event Action<BaseTile> OnActivated;
+        
+        protected virtual void Update()
         {
-            OnReady?.Invoke(this);
+            UpdateState();
         }
-    }
-    
-    /// <summary>
-    /// 현재 타일 상태 반환
-    /// </summary>
-    public TileState GetState()
-    {
-        return currentState;
-    }
-    
-    /// <summary>
-    /// 현재 상태의 진행도(0-1) 반환
-    /// </summary>
-    public float GetStateProgress()
-    {
-        switch (currentState)
+        
+        /// <summary>
+        /// 타일 상태 업데이트 및 상태 전환 관리
+        /// </summary>
+        protected virtual void UpdateState()
         {
-            case TileState.Charging:
-                return stateTimer / chargeTime;
-            default:
-                return 0f;
+            switch (_currentState)
+            {
+                case TileState.Charging:
+                    _stateTimer += Time.deltaTime;
+                    if (_stateTimer >= _chargeTime)
+                    {
+                        SetState(TileState.Ready);
+                    }
+                    break;
+            
+                case TileState.Ready:
+                    // 준비 상태 유지
+                    break;
+            
+                case TileState.Activated:
+                    // 발동 후 즉시 충전 상태로
+                    SetState(TileState.Charging);
+                    _stateTimer = 0f;
+                    break;
+            }
         }
-    }
+        
+        /// <summary>
+        /// 타일 발동 - 플레이어가 밟을 때 호출
+        /// </summary>
+        public virtual void Activate()
+        {
+            if (_currentState == TileState.Ready)
+            {
+                SetState(TileState.Activated);
+                OnActivated?.Invoke(this);
+            }
+        }
+        
+        /// <summary>
+        /// 타일 상태 변경 처리
+        /// </summary>
+        protected void SetState(TileState newState)
+        {
+            _currentState = newState;
+            _stateTimer = 0f;
+            
+            if (newState == TileState.Ready)
+            {
+                OnReady?.Invoke(this);
+            }
+        }
+        
+        /// <summary>
+        /// 현재 타일 상태 반환
+        /// </summary>
+        public TileState GetState()
+        {
+            return _currentState;
+        }
+        
+        /// <summary>
+        /// 현재 상태의 진행도(0-1) 반환
+        /// </summary>
+        public float GetStateProgress()
+        {
+            switch (_currentState)
+            {
+                case TileState.Charging:
+                    return _stateTimer / _chargeTime;
+                default:
+                    return 0f;
+            }
+        }
+    }   
 }
