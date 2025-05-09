@@ -38,7 +38,7 @@ namespace Game.Scripts.Tiles
                 Vector3 direction = (targetEnemy.transform.position - transform.position).normalized;
                 GameObject projectileObj = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
                 Projectile projectile = projectileObj.GetComponent<Projectile>();
-                projectile.Initialize(direction);
+                projectile.Initialize(direction, Projectile.ProjectileTeam.Player);
             }
         }
     }   

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace Game.Scripts.Characters.Enemies
@@ -12,6 +13,10 @@ namespace Game.Scripts.Characters.Enemies
     
         public int Health { get => _health; set => _health = value; }
         public bool IsDead { get => _isDead; }
+        
+        // 이벤트 정의
+        public event Action<int> OnHealthChanged;
+        public event Action OnEnemyDeath;
     
         /// <summary>
         /// 데미지 적용 및 사망 처리
@@ -22,6 +27,8 @@ namespace Game.Scripts.Characters.Enemies
         
             _health -= damage;
             Debug.Log($"적 피격: {damage} 데미지, 남은 체력: {_health}");
+            
+            OnHealthChanged?.Invoke(_health);
         
             if (_health <= 0)
             {
@@ -36,6 +43,7 @@ namespace Game.Scripts.Characters.Enemies
         {
             _isDead = true;
             Debug.Log("적 사망");
+            OnEnemyDeath?.Invoke();
         }
     }
 }
