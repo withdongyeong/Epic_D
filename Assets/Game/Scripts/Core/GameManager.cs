@@ -4,7 +4,6 @@ using Game.Scripts.Tiles;
 using Game.Scripts.Building;
 using UnityEngine;
 using System.Collections.Generic;
-using Game.Scripts.Building.Game.Scripts.Building;
 
 namespace Game.Scripts.Core
 {

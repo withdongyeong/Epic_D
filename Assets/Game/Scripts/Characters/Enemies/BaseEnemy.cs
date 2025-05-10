@@ -8,7 +8,7 @@ namespace Game.Scripts.Characters.Enemies
     /// </summary>
     public class BaseEnemy : MonoBehaviour
     {
-        private int _health = 100;
+        private int _health = 200;
         private bool _isDead;
     
         public int Health { get => _health; set => _health = value; }
