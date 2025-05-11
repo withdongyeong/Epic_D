@@ -329,10 +329,25 @@ namespace Game.Scripts.Inventory
             {
                 // 배치 가능 여부 확인
                 bool canPlace = _inventoryGrid.CanPlaceItem(_itemReference, gridX, gridY);
+                
+                // 골드 확인
+                if (!ShopManager.Instance.CanPurchase(_itemReference.ItemData))
+                {
+                    Debug.Log("골드가 부족하여 아이템을 배치할 수 없습니다.");
+                    return false;
+                }
         
                 // 배치 시도
                 if (_inventoryGrid.PlaceItem(_itemReference, gridX, gridY))
                 {
+                    // 골드 차감
+                    if (!ShopManager.Instance.Purchase(_itemReference.ItemData))
+                    {
+                        // 골드 부족으로 구매 실패 시 배치 취소
+                        _inventoryGrid.RemoveItem(_itemReference);
+                        return false;
+                    }
+                    
                     // 아이템 위치 설정
                     transform.SetParent(_inventoryGrid.GridContainer);
                     _rectTransform.anchoredPosition = _inventoryGrid.GetCellPosition(gridX, gridY);

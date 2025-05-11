@@ -102,6 +102,12 @@ namespace Game.Scripts.Core
                         GameObject tileObj = Instantiate(tilePrefab, centerPos, Quaternion.identity);
                         BaseTile tile = tileObj.GetComponent<BaseTile>();
                         
+                        // 공통 타이밍 속성 설정
+                        if (tile != null)
+                        {
+                            tile.ChargeTime = itemData.ChargeTime;
+                        }
+                        
                         // 타일 속성 설정 (InventoryItemData 기반)
                         if (tile is AttackTile attackTile)
                         {
@@ -179,17 +185,6 @@ namespace Game.Scripts.Core
                 default:
                     return null;
             }
-        }
-        
-        /// <summary>
-        /// 타일 생성 및 그리드 등록
-        /// </summary>
-        private void SpawnTile(GameObject tilePrefab, int x, int y)
-        {
-            Vector3 position = _gridSystem.GetWorldPosition(x, y);
-            GameObject tileObj = Instantiate(tilePrefab, position, Quaternion.identity);
-            BaseTile tile = tileObj.GetComponent<BaseTile>();
-            _gridSystem.RegisterTile(tile, x, y);
         }
         
         /// <summary>

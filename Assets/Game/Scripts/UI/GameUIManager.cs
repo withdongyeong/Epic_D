@@ -1,4 +1,5 @@
 using Game.Scripts.Core;
+using Game.Scripts.Inventory;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -98,6 +99,7 @@ namespace Game.Scripts.UI
         /// </summary>
         private void ReturnToBuilding()
         {
+            ShopManager.Instance.AddGold(15);
             TimeScaleManager.Instance.ResetTimeScale();
             SceneManager.LoadScene(_buildingSceneName);
         }

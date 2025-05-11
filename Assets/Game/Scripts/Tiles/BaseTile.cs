@@ -16,14 +16,12 @@ namespace Game.Scripts.Tiles
         }
         
         private float _chargeTime = 3f;
-        private float _cooldownTime = 1f;
         
         private TileState _currentState = TileState.Charging;
         private float _stateTimer;
         
         // Getters & Setters
         public float ChargeTime { get => _chargeTime; set => _chargeTime = value; }
-        public float CooldownTime { get => _cooldownTime; set => _cooldownTime = value; }
         
         // 이벤트 정의
         public event Action<BaseTile> OnReady;

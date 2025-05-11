@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: HealTest4
   m_EditorClassIdentifier: 
   _itemName: "\uD7904"
-  _itemSprite: {fileID: 21300000, guid: ee8ce5cd9c0883f4182b5cfd43cfd7fe, type: 3}
+  _itemSprite: {fileID: 21300000, guid: ea292d445b1c4cb48897511cd9453f1c, type: 3}
   _spritePivot: {x: 0.5, y: 0.5}
   _shapeType: 3
   _tileType: 2
