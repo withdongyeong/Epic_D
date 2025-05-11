@@ -12,7 +12,6 @@ namespace Game.Scripts.Characters.Enemies
     /// </summary>
     public class FixedEnemy : BaseEnemy
     {
-        private float _attackCooldown = 2f;
         private int _currentPattern;
         private GridSystem _gridSystem;
         private PlayerController _player;
@@ -21,8 +20,6 @@ namespace Game.Scripts.Characters.Enemies
         
         public GameObject projectilePrefab;
         public GameObject warningTilePrefab;
-        
-        public float AttackCooldown { get => _attackCooldown; set => _attackCooldown = value; }
         
         void Start()
         {
@@ -221,7 +218,7 @@ namespace Game.Scripts.Characters.Enemies
                 Projectile projectile = projectileObj.GetComponent<Projectile>();
                 projectile.Initialize(direction, Projectile.ProjectileTeam.Enemy);
             
-                yield return new WaitForSeconds(0.2f);
+                yield return new WaitForSeconds(0.3f);
             }
         }
     

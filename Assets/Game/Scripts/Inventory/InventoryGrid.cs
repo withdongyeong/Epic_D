@@ -372,18 +372,20 @@ namespace Game.Scripts.Inventory
         /// </summary>
         public bool TryGetGridCoordinates(Vector2 mousePosition, Camera camera, out int gridX, out int gridY)
         {
-            // 그리드 왼쪽 상단 모서리의 월드 좌표 계산
-            Vector3 gridTopLeft = _gridContainer.position;
-            gridTopLeft.y -= 256;
-            gridTopLeft.x -= 256;
+            // 그리드 월드 좌표 계산
+            Vector3[] corners = new Vector3[4];
+            _gridContainer.GetWorldCorners(corners);
     
-            // 마우스 위치에서 그리드 왼쪽 상단 좌표를 빼서 상대적 위치 계산
-            Vector2 relativePos = mousePosition - new Vector2(gridTopLeft.x, gridTopLeft.y);
-    
-            // 상대적 위치를 셀 크기로 나누어 그리드 인덱스 계산
+            // 마우스 위치에서 그리드 좌측 상단 좌표를 빼서 상대적 위치 계산
+            Vector2 relativePos = mousePosition - new Vector2(corners[0].x, corners[0].y);
+
+            // 그리드 인덱스 계산
             gridX = (int)(relativePos.x / 64);
-            gridY = (int)(relativePos.y / 64);
     
+            // Y축 반전
+            int totalRows = 8; // 그리드 행 수
+            gridY = totalRows - 1 - (int)(relativePos.y / 64);
+
             return true;
         }
         

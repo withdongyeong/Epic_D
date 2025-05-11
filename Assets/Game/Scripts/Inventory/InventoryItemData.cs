@@ -19,9 +19,10 @@ namespace Game.Scripts.Inventory
         [SerializeField] private TileData.TileType _tileType = TileData.TileType.Attack;
         
         [Header("아이템 속성")]
-        [SerializeField] private int _damage = 10;
-        [SerializeField] private int _defense = 0;
-        [SerializeField] private int _buffValue = 0;
+        [SerializeField] private int _damage = 10;        // 공격 타일용
+        [SerializeField] private int _defense = 5;        // 방어 타일용
+        [SerializeField] private int _healAmount = 10;    // 회복 타일용
+        [SerializeField] private float _obstacleDuration = 5f; // 장애물 타일용
         [SerializeField] private int _cost = 1;
         
         /// <summary>
@@ -60,9 +61,14 @@ namespace Game.Scripts.Inventory
         public int Defense { get => _defense; set => _defense = value; }
         
         /// <summary>
-        /// 아이템 버프 값
+        /// 아이템 회복량
         /// </summary>
-        public int BuffValue { get => _buffValue; set => _buffValue = value; }
+        public int HealAmount { get => _healAmount; set => _healAmount = value; }
+        
+        /// <summary>
+        /// 장애물 지속시간
+        /// </summary>
+        public float ObstacleDuration { get => _obstacleDuration; set => _obstacleDuration = value; }
         
         /// <summary>
         /// 아이템 비용
@@ -103,7 +109,8 @@ namespace Game.Scripts.Inventory
             clone.TileType = this.TileType;
             clone.Damage = this.Damage;
             clone.Defense = this.Defense;
-            clone.BuffValue = this.BuffValue;
+            clone.HealAmount = this.HealAmount;
+            clone.ObstacleDuration = this.ObstacleDuration;
             clone.Cost = this.Cost;
             
             // 형태 데이터 복사

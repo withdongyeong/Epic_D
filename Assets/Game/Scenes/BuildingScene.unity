@@ -237,6 +237,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1095165339}
     m_Modifications:
+    - target: {fileID: 528522685876866447, guid: 37900e859d41d2d40b850d90a92693aa, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2978597780628212149, guid: 37900e859d41d2d40b850d90a92693aa, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5275744647324326056, guid: 37900e859d41d2d40b850d90a92693aa, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -1036,6 +1044,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1153673597}
   - component: {fileID: 1153673598}
+  - component: {fileID: 1153673599}
   m_Layer: 0
   m_Name: Manager
   m_TagString: Untagged
@@ -1068,6 +1077,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bf8da69540a84c7696ed6158bf3b60e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1153673599
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1153673596}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d0f0b20536a4a4aac2a9e88de364615, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &1212325910

@@ -13,6 +13,7 @@ namespace Game.Scripts.Core
         private float _cellSize = 1f;
         
         private BaseTile[,] _grid;
+        private bool[,] _blockedCells; // 이동 불가 셀 상태
     
         // Getters & Setters
         public int Width { get => _width; set => _width = value; }
@@ -25,6 +26,7 @@ namespace Game.Scripts.Core
         void Awake()
         {
             _grid = new BaseTile[_width, _height];
+            _blockedCells = new bool[_width, _height];
         }
         
         /// <summary>
@@ -68,11 +70,40 @@ namespace Game.Scripts.Core
         }
         
         /// <summary>
-        /// 좌표가 격자 범위 내인지 확인
+        /// 좌표가 격자 범위 내이고 이동 가능한지 확인
         /// </summary>
         public bool IsValidPosition(int x, int y)
         {
-            return x >= 0 && y >= 0 && x < _width && y < _height;
+            // 그리드 범위 체크
+            bool isInBounds = x >= 0 && y >= 0 && x < _width && y < _height;
+            
+            // 범위 내에 있고 차단되지 않은 셀인지 확인
+            return isInBounds && !IsBlocked(x, y);
+        }
+        
+        /// <summary>
+        /// 특정 위치가 차단되었는지 확인
+        /// </summary>
+        public bool IsBlocked(int x, int y)
+        {
+            if (x >= 0 && y >= 0 && x < _width && y < _height)
+            {
+                return _blockedCells[x, y];
+            }
+            // 그리드 바깥은 차단된 것으로 간주
+            return true;
+        }
+        
+        /// <summary>
+        /// 특정 셀의 이동 가능 상태 설정
+        /// </summary>
+        public void SetCellBlocked(int x, int y, bool blocked)
+        {
+            if (x >= 0 && y >= 0 && x < _width && y < _height)
+            {
+                _blockedCells[x, y] = blocked;
+                Debug.Log($"셀 차단 상태 변경: ({x}, {y}) -> {blocked}");
+            }
         }
     }
 }
