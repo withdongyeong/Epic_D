@@ -48,9 +48,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8fd56446fc244b882e30510a9af0ff7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxHealth: 300
+  attackDelay: 0.5
   projectilePrefab: {fileID: 3867617096255318561, guid: fe30c6ea4c461364084f5b75aa32af2a, type: 3}
   warningTilePrefab: {fileID: 1845840710705793256, guid: 0d9934601aa76b04f902fe9112847086, type: 3}
   explosionEffectPrefab: {fileID: 2655093744207988788, guid: 1f85733174b02924cb68fea37977ea9f, type: 3}
+  meteorPrefab: {fileID: 5816042405131102538, guid: fe779e50ad70be1438c5e7e9dc1b1f10, type: 3}
+  meteorHoverHeight: 2
+  meteorTravelDuration: 1.5
 --- !u!61 &4193031084251287229
 BoxCollider2D:
   m_ObjectHideFlags: 0
