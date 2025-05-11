@@ -2,7 +2,9 @@ using Game.Scripts.Characters.Enemies;
 using Game.Scripts.Characters.Player;
 using Game.Scripts.Tiles;
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Game.Scripts.Inventory;
 
 namespace Game.Scripts.Core
@@ -17,6 +19,8 @@ namespace Game.Scripts.Core
         public GameObject defenseTilePrefab;
         public GameObject healTilePrefab;
         public GameObject enemyPrefab;
+        public TextMeshProUGUI countdownText;
+        public float countdownDuration = 3f;
         
         private GridSystem _gridSystem;
         private BaseEnemy _enemy;
@@ -24,6 +28,7 @@ namespace Game.Scripts.Core
         private PlayerHealth _playerHealth;
         private GameStateManager _gameStateManager;
         public GameObject highlightTilePrefab;
+        private bool _gameStarted = false;
         
         void Start()
         {
@@ -43,6 +48,54 @@ namespace Game.Scripts.Core
             SpawnPlayer();
             SpawnEnemy();
             
+            // 카운트다운 텍스트 확인
+            if (countdownText == null)
+            {
+                GameObject textObj = GameObject.Find("CountdownText");
+                if (textObj != null)
+                {
+                    countdownText = textObj.GetComponent<TextMeshProUGUI>();
+                }
+            }
+            
+            // 카운트다운 시작
+            StartCoroutine(StartCountdown());
+        }
+        
+        private IEnumerator StartCountdown()
+        {
+            // 게임 시간은 멈추되 UI는 업데이트되도록 설정
+            TimeScaleManager.Instance.StopTimeScale();
+    
+            // 카운트다운 시작
+            float timeLeft = countdownDuration;
+    
+            while (timeLeft > 0)
+            {
+                // 카운트다운 텍스트 업데이트
+                if (countdownText != null)
+                {
+                    countdownText.text = Mathf.CeilToInt(timeLeft).ToString();
+                    countdownText.gameObject.SetActive(true);
+                }
+        
+                // Time.timeScale에 영향받지 않는 WaitForSecondsRealtime 사용
+                yield return new WaitForSecondsRealtime(0.1f);
+                timeLeft -= 0.1f;
+            }
+    
+            // 카운트다운 완료
+            if (countdownText != null)
+            {
+                countdownText.text = "Start!";
+                yield return new WaitForSecondsRealtime(0.5f);
+                countdownText.gameObject.SetActive(false);
+            }
+    
+            TimeScaleManager.Instance.ResetTimeScale();
+    
+            _gameStarted = true;
+    
             // 게임 시작 상태로 설정
             _gameStateManager.StartGame();
         }

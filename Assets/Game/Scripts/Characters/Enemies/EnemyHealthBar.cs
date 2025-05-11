@@ -44,8 +44,8 @@ namespace Game.Scripts.UI
             // 초기 체력 설정
             if (_enemy != null && healthSlider != null)
             {
-                healthSlider.maxValue = _enemy.Health;
-                healthSlider.value = _enemy.Health;
+                healthSlider.maxValue = _enemy.maxHealth;
+                healthSlider.value = _enemy.maxHealth;
             }
         }
 
@@ -61,7 +61,7 @@ namespace Game.Scripts.UI
             UpdatePosition();
 
             // 체력바 값 업데이트
-            healthSlider.value = _enemy.Health;
+            healthSlider.value = _enemy.CurrentHealth;
         }
 
         /// <summary>

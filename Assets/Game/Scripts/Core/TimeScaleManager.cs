@@ -55,7 +55,11 @@ namespace Game.Scripts.Core
         {
             SceneManager.sceneLoaded -= OnSceneLoaded;
         }
-        
+
+        public void StopTimeScale()
+        {
+            Time.timeScale = 0f;
+        }
         /// <summary>
         /// 타임스케일 강제 초기화
         /// </summary>

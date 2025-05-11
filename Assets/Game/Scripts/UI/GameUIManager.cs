@@ -99,7 +99,11 @@ namespace Game.Scripts.UI
         /// </summary>
         private void ReturnToBuilding()
         {
-            ShopManager.Instance.AddGold(15);
+            // TODO 임시. 시도 횟수 증가
+            if (ShopManager.Instance != null)
+            {
+                ShopManager.Instance.IncreaseTryCount();
+            }
             TimeScaleManager.Instance.ResetTimeScale();
             SceneManager.LoadScene(_buildingSceneName);
         }

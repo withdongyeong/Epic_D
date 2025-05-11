@@ -19,7 +19,7 @@ MonoBehaviour:
   _tileType: 1
   _chargeTime: 15
   _damage: 10
-  _invincibilityDuration: 0.6
+  _invincibilityDuration: 2
   _healAmount: 10
   _obstacleDuration: 5
   _cost: 3

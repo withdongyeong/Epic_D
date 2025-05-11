@@ -14,6 +14,7 @@ namespace Game.Scripts.Inventory
 
         [SerializeField] private int _gold = 10;
         [SerializeField] private TextMeshProUGUI _goldText;
+        private int _tryCount = 1;
 
         // 싱글톤 인스턴스
         public static ShopManager Instance
@@ -42,6 +43,18 @@ namespace Game.Scripts.Inventory
             }
         }
 
+        // 시도 횟수 프로퍼티
+        public int TryCount
+        {
+            get => _tryCount;
+            set
+            {
+                _tryCount = value;
+                // 시도 횟수 증가 시 골드 업데이트
+                UpdateGoldBasedOnTryCount();
+            }
+        }
+
         private void Awake()
         {
             // 싱글톤 처리
@@ -60,8 +73,8 @@ namespace Game.Scripts.Inventory
             // Scene 로드 이벤트 등록
             SceneManager.sceneLoaded += OnSceneLoaded;
 
-            // UI 초기화
-            UpdateGoldUI();
+            // 초기 골드 설정
+            UpdateGoldBasedOnTryCount();
         }
 
         /// <summary>
@@ -97,6 +110,27 @@ namespace Game.Scripts.Inventory
                 {
                     UpdateGoldUI();
                 }
+            }
+        }
+
+        /// <summary>
+        /// 시도 횟수에 따라 골드 업데이트
+        /// </summary>
+        private void UpdateGoldBasedOnTryCount()
+        {
+            // 10 + (시도횟수 × 1)
+            SetMoney(10 + (_tryCount - 1));
+        }
+
+        /// <summary>
+        /// 골드 설정
+        /// </summary>
+        public void SetMoney(int amount)
+        {
+            if (amount >= 0)
+            {
+                Gold = amount;
+                Debug.Log($"골드 설정: {_gold} (시도 횟수: {_tryCount})");
             }
         }
 
@@ -151,6 +185,15 @@ namespace Game.Scripts.Inventory
                 Gold += amount;
                 Debug.Log($"골드 획득: +{amount}, 총 골드: {_gold}");
             }
+        }
+
+        /// <summary>
+        /// 시도 횟수 증가
+        /// </summary>
+        public void IncreaseTryCount()
+        {
+            TryCount++;
+            Debug.Log($"시도 횟수 증가: {_tryCount}");
         }
 
         private void OnDestroy()
