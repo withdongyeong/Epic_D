@@ -20,6 +20,7 @@ namespace Game.Scripts.Characters.Enemies
         
         public GameObject projectilePrefab;
         public GameObject warningTilePrefab;
+        public GameObject explosionEffectPrefab; // 폭발 이펙트 프리팹
         
         void Start()
         {
@@ -49,51 +50,54 @@ namespace Game.Scripts.Characters.Enemies
         /// </summary>
         private void ExecutePattern()
         {
-            switch (Random.Range(0, 8)) // 8개 패턴
+            switch (Random.Range(0, 7)) // 7개 패턴
             {
                 case 0:
-                    StartCoroutine(ShootProjectile());
-                    break;
-                case 1:
                     StartCoroutine(AreaAttack());
                     break;
-                case 2:
+                case 1:
                     StartCoroutine(HalfGridAttack());
                     break;
-                case 3:
+                case 2:
                     StartCoroutine(RapidFirePattern());
                     break;
-                case 4:
+                case 3:
                     StartCoroutine(CrossAttackPattern());
                     break;
-                case 5:
+                case 4:
                     StartCoroutine(MultiAreaAttack());
                     break;
-                case 6:
+                case 5:
                     StartCoroutine(DiagonalAttackPattern());
                     break;
-                case 7:
+                case 6:
                     StartCoroutine(DiagonalCrossPattern());
                     break;
             }
         }
         
         /// <summary>
-        /// 패턴 1: 투사체 발사
+        /// 데미지 효과 생성
         /// </summary>
-        private IEnumerator ShootProjectile()
+        private void CreateDamageEffect(Vector3 position)
         {
-            Debug.Log("적: 투사체 발사");
-            
-            if (projectilePrefab != null && _player != null)
+            if (explosionEffectPrefab != null)
             {
-                Vector3 direction = (_player.transform.position - transform.position).normalized;
-                GameObject projectileObj = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
-                Projectile projectile = projectileObj.GetComponent<Projectile>();
-                projectile.Initialize(direction, Projectile.ProjectileTeam.Enemy);
+                GameObject effect = Instantiate(explosionEffectPrefab, position, Quaternion.identity);
+                Destroy(effect, 0.1f);
             }
-            
-            yield return null;
+        }
+        
+        /// <summary>
+        /// 플레이어에게 데미지 적용 및 이펙트 표시
+        /// </summary>
+        private void ApplyDamageWithEffect(int damage)
+        {
+            if (_playerHealth != null)
+            {
+                _playerHealth.TakeDamage(damage);
+                CreateDamageEffect(_player.transform.position);
+            }
         }
         
         /// <summary>
@@ -101,8 +105,6 @@ namespace Game.Scripts.Characters.Enemies
         /// </summary>
         private IEnumerator AreaAttack()
         {
-            Debug.Log("적: 영역 공격 준비");
-            
             // 플레이어 위치 가져오기
             int playerX, playerY;
             _gridSystem.GetXY(_player.transform.position, out playerX, out playerY);
@@ -121,7 +123,8 @@ namespace Game.Scripts.Characters.Enemies
                     if (_gridSystem.IsValidPosition(tileX, tileY))
                     {
                         Vector3 tilePos = _gridSystem.GetWorldPosition(tileX, tileY);
-                        warningTiles[index++] = Instantiate(warningTilePrefab, tilePos, Quaternion.identity);
+                        warningTiles[index] = Instantiate(warningTilePrefab, tilePos, Quaternion.identity);
+                        index++;
                     }
                 }
             }
@@ -129,14 +132,27 @@ namespace Game.Scripts.Characters.Enemies
             // 경고 대기
             yield return new WaitForSeconds(1.5f);
             
-            // 공격 실행
-            Debug.Log("적: 영역 공격 발동");
-            
             // 플레이어가 영역 내에 있는지 확인
             _gridSystem.GetXY(_player.transform.position, out int currentX, out int currentY);
             if (Mathf.Abs(currentX - playerX) <= 1 && Mathf.Abs(currentY - playerY) <= 1)
             {
-                _playerHealth.TakeDamage(15);
+                ApplyDamageWithEffect(15);
+            }
+            
+            // 공격 영역에 폭발 이펙트 생성
+            for (int x = -1; x <= 1; x++)
+            {
+                for (int y = -1; y <= 1; y++)
+                {
+                    int tileX = playerX + x;
+                    int tileY = playerY + y;
+            
+                    if (_gridSystem.IsValidPosition(tileX, tileY))
+                    {
+                        Vector3 tilePos = _gridSystem.GetWorldPosition(tileX, tileY);
+                        CreateDamageEffect(tilePos);
+                    }
+                }
             }
             
             // 경고 타일 제거
@@ -154,13 +170,12 @@ namespace Game.Scripts.Characters.Enemies
         /// </summary>
         private IEnumerator HalfGridAttack()
         {
-            Debug.Log("적: 광역 공격 준비");
-            
             // 공격할 절반 결정 (가로 또는 세로)
             bool isHorizontal = Random.value > 0.5f;
             int splitValue = _gridSystem.Height / 2; 
             
             // 경고 타일 생성
+            List<Vector3> attackPositions = new List<Vector3>();
             GameObject[] warningTiles = new GameObject[_gridSystem.Width * _gridSystem.Height / 2];
             int index = 0;
             
@@ -173,6 +188,7 @@ namespace Game.Scripts.Characters.Enemies
                     if (shouldAttack)
                     {
                         Vector3 tilePos = _gridSystem.GetWorldPosition(x, y);
+                        attackPositions.Add(tilePos);
                         warningTiles[index] = Instantiate(warningTilePrefab, tilePos, Quaternion.identity);
                         index++;
                     }
@@ -182,16 +198,19 @@ namespace Game.Scripts.Characters.Enemies
             // 경고 대기
             yield return new WaitForSeconds(2f);
             
-            // 공격 실행
-            Debug.Log("적: 광역 공격 발동");
-            
             // 플레이어 위치 확인
             _gridSystem.GetXY(_player.transform.position, out int playerX, out int playerY);
             bool isPlayerInArea = isHorizontal ? playerY < splitValue : playerX < splitValue;
             
             if (isPlayerInArea)
             {
-                _playerHealth.TakeDamage(20);
+                ApplyDamageWithEffect(20);
+            }
+            
+            // 공격 영역에 폭발 이펙트 생성
+            foreach (Vector3 pos in attackPositions)
+            {
+                CreateDamageEffect(pos);
             }
             
             // 경고 타일 제거
@@ -209,8 +228,6 @@ namespace Game.Scripts.Characters.Enemies
         /// </summary>
         private IEnumerator RapidFirePattern()
         {
-            Debug.Log("적: 연속 발사");
-        
             for (int i = 0; i < 5; i++)
             {
                 Vector3 direction = (_player.transform.position - transform.position).normalized;
@@ -227,17 +244,17 @@ namespace Game.Scripts.Characters.Enemies
         /// </summary>
         private IEnumerator CrossAttackPattern()
         {
-            Debug.Log("적: 십자 공격 준비");
-        
             // 플레이어 위치
             _gridSystem.GetXY(_player.transform.position, out int playerX, out int playerY);
         
             // 십자 경고 생성
             List<GameObject> warningTiles = new List<GameObject>();
+            List<Vector3> attackPositions = new List<Vector3>();
         
             for (int x = 0; x < _gridSystem.Width; x++)
             {
                 Vector3 pos = _gridSystem.GetWorldPosition(x, playerY);
+                attackPositions.Add(pos);
                 warningTiles.Add(Instantiate(warningTilePrefab, pos, Quaternion.identity));
             }
         
@@ -246,6 +263,7 @@ namespace Game.Scripts.Characters.Enemies
                 if (y != playerY) // 중복 방지
                 {
                     Vector3 pos = _gridSystem.GetWorldPosition(playerX, y);
+                    attackPositions.Add(pos);
                     warningTiles.Add(Instantiate(warningTilePrefab, pos, Quaternion.identity));
                 }
             }
@@ -256,7 +274,13 @@ namespace Game.Scripts.Characters.Enemies
             _gridSystem.GetXY(_player.transform.position, out int currentX, out int currentY);
             if (currentX == playerX || currentY == playerY)
             {
-                _playerHealth.TakeDamage(15);
+                ApplyDamageWithEffect(15);
+            }
+            
+            // 공격 영역에 폭발 이펙트 생성
+            foreach (Vector3 pos in attackPositions)
+            {
+                CreateDamageEffect(pos);
             }
         
             // 제거
@@ -271,8 +295,6 @@ namespace Game.Scripts.Characters.Enemies
         /// </summary>
         private IEnumerator MultiAreaAttack()
         {
-            Debug.Log("적: 연속 영역 공격");
-    
             for (int i = 0; i < 3; i++)
             {
                 // 랜덤 위치 선택
@@ -281,6 +303,7 @@ namespace Game.Scripts.Characters.Enemies
         
                 // 경고 타일 생성 (2x2 영역)
                 List<GameObject> warningTiles = new List<GameObject>();
+                List<Vector3> attackPositions = new List<Vector3>();
         
                 for (int x = 0; x < 2; x++)
                 {
@@ -292,6 +315,7 @@ namespace Game.Scripts.Characters.Enemies
                         if (_gridSystem.IsValidPosition(tileX, tileY))
                         {
                             Vector3 tilePos = _gridSystem.GetWorldPosition(tileX, tileY);
+                            attackPositions.Add(tilePos);
                             warningTiles.Add(Instantiate(warningTilePrefab, tilePos, Quaternion.identity));
                         }
                     }
@@ -306,7 +330,13 @@ namespace Game.Scripts.Characters.Enemies
         
                 if (isHit)
                 {
-                    _playerHealth.TakeDamage(10);
+                    ApplyDamageWithEffect(10);
+                }
+                
+                // 공격 영역에 폭발 이펙트 생성
+                foreach (Vector3 pos in attackPositions)
+                {
+                    CreateDamageEffect(pos);
                 }
         
                 // 경고 타일 제거
@@ -324,13 +354,12 @@ namespace Game.Scripts.Characters.Enemies
         /// </summary>
         private IEnumerator DiagonalAttackPattern()
         {
-            Debug.Log("적: 대각선 공격 준비");
-            
             // 플레이어 위치
             _gridSystem.GetXY(_player.transform.position, out int playerX, out int playerY);
             
             // 대각선 경고 생성
             List<GameObject> warningTiles = new List<GameObject>();
+            List<Vector3> attackPositions = new List<Vector3>();
             
             // 우상단-좌하단 대각선
             int offset = playerY - playerX;
@@ -340,6 +369,7 @@ namespace Game.Scripts.Characters.Enemies
                 if (_gridSystem.IsValidPosition(x, y))
                 {
                     Vector3 pos = _gridSystem.GetWorldPosition(x, y);
+                    attackPositions.Add(pos);
                     warningTiles.Add(Instantiate(warningTilePrefab, pos, Quaternion.identity));
                 }
             }
@@ -352,6 +382,7 @@ namespace Game.Scripts.Characters.Enemies
                 if (_gridSystem.IsValidPosition(x, y))
                 {
                     Vector3 pos = _gridSystem.GetWorldPosition(x, y);
+                    attackPositions.Add(pos);
                     warningTiles.Add(Instantiate(warningTilePrefab, pos, Quaternion.identity));
                 }
             }
@@ -369,7 +400,13 @@ namespace Game.Scripts.Characters.Enemies
             
             if (isOnDiagonal1 || isOnDiagonal2)
             {
-                _playerHealth.TakeDamage(15);
+                ApplyDamageWithEffect(15);
+            }
+            
+            // 공격 영역에 폭발 이펙트 생성
+            foreach (Vector3 pos in attackPositions)
+            {
+                CreateDamageEffect(pos);
             }
             
             // 제거
@@ -384,13 +421,12 @@ namespace Game.Scripts.Characters.Enemies
         /// </summary>
         private IEnumerator DiagonalCrossPattern()
         {
-            Debug.Log("적: 대각선-십자 연속 공격 준비");
-            
             // 플레이어 위치
             _gridSystem.GetXY(_player.transform.position, out int playerX, out int playerY);
             
             // 1단계: 대각선 경고 생성
             List<GameObject> warningTiles = new List<GameObject>();
+            List<Vector3> attackPositions = new List<Vector3>();
             
             // 우상단-좌하단 대각선
             int offset = playerY - playerX;
@@ -400,6 +436,7 @@ namespace Game.Scripts.Characters.Enemies
                 if (_gridSystem.IsValidPosition(x, y))
                 {
                     Vector3 pos = _gridSystem.GetWorldPosition(x, y);
+                    attackPositions.Add(pos);
                     warningTiles.Add(Instantiate(warningTilePrefab, pos, Quaternion.identity));
                 }
             }
@@ -412,7 +449,13 @@ namespace Game.Scripts.Characters.Enemies
             
             if (isOnDiagonal)
             {
-                _playerHealth.TakeDamage(10);
+                ApplyDamageWithEffect(10);
+            }
+            
+            // 공격 영역에 폭발 이펙트 생성
+            foreach (Vector3 pos in attackPositions)
+            {
+                CreateDamageEffect(pos);
             }
             
             // 경고 타일 제거
@@ -426,6 +469,7 @@ namespace Game.Scripts.Characters.Enemies
             
             // 2단계: 십자 경고 생성
             warningTiles = new List<GameObject>();
+            attackPositions = new List<Vector3>();
             
             yield return new WaitForSeconds(0.3f);
             
@@ -433,6 +477,7 @@ namespace Game.Scripts.Characters.Enemies
             for (int x = 0; x < _gridSystem.Width; x++)
             {
                 Vector3 pos = _gridSystem.GetWorldPosition(x, playerY);
+                attackPositions.Add(pos);
                 warningTiles.Add(Instantiate(warningTilePrefab, pos, Quaternion.identity));
             }
             
@@ -442,7 +487,13 @@ namespace Game.Scripts.Characters.Enemies
             _gridSystem.GetXY(_player.transform.position, out currentX, out currentY);
             if (currentY == playerY)
             {
-                _playerHealth.TakeDamage(15);
+                ApplyDamageWithEffect(15);
+            }
+            
+            // 공격 영역에 폭발 이펙트 생성
+            foreach (Vector3 pos in attackPositions)
+            {
+                CreateDamageEffect(pos);
             }
             
             // 타일 제거

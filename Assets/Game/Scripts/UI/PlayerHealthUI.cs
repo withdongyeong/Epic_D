@@ -25,8 +25,6 @@ namespace Game.Scripts.UI
                 // 슬라이더 초기 설정
                 _healthSlider.maxValue = _playerHealth.MaxHealth;
                 _healthSlider.value = _playerHealth.CurrentHealth;
-                
-                Debug.Log($"플레이어 체력 UI 초기화: {_playerHealth.CurrentHealth}/{_playerHealth.MaxHealth}");
             }
             else
             {
@@ -42,7 +40,6 @@ namespace Game.Scripts.UI
             if (_healthSlider != null)
             {
                 _healthSlider.value = health;
-                Debug.Log($"체력 UI 업데이트: {health}");
             }
         }
         

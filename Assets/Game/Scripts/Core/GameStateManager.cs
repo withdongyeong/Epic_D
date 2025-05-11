@@ -82,7 +82,6 @@ namespace Game.Scripts.Core
             }
             
             OnGameStateChanged?.Invoke(newState);
-            Debug.Log($"게임 상태 변경: {newState}, 타임스케일: {Time.timeScale}");
         }
 
         /// <summary>

@@ -19,6 +19,7 @@ namespace Game.Scripts.Inventory
         [Header("시각적 설정")]
         [SerializeField] private RectTransform _gridContainer;
         [SerializeField] private GameObject _cellHighlightPrefab; // 셀 하이라이트 프리팹
+        [SerializeField] private GameObject _cellBasePrefab; // 기본 프리팹
         [SerializeField] private Color _validPlacementColor = Color.green;
         [SerializeField] private Color _invalidPlacementColor = Color.red;
         
@@ -62,7 +63,7 @@ namespace Game.Scripts.Inventory
                 for (int x = 0; x < _width; x++)
                 {
                     // 셀 하이라이트 생성
-                    GameObject cellHighlight = Instantiate(_cellHighlightPrefab, _gridContainer);
+                    GameObject cellHighlight = Instantiate(_cellBasePrefab, _gridContainer);
                     RectTransform rectTransform = cellHighlight.GetComponent<RectTransform>();
                     rectTransform.anchoredPosition = GetCellPosition(x, y);
                     rectTransform.sizeDelta = new Vector2(_cellSize, _cellSize);
@@ -79,9 +80,6 @@ namespace Game.Scripts.Inventory
                     }
                 }
             }
-            Debug.Log($"그리드 설정: 너비={_width}, 높이={_height}, 셀 크기={_cellSize}");
-            Debug.Log($"그리드 컨테이너 크기: {_gridContainer.rect.size}");
-            Debug.Log($"예상 그리드 크기: {_width * _cellSize} x {_height * _cellSize}");
         }
         
         /// <summary>
@@ -90,13 +88,11 @@ namespace Game.Scripts.Inventory
         private void InitializeGrid()
         {
             _grid = new InventoryItem[_width, _height];
-            Debug.Log($"그리드 초기화: {_width}x{_height} 크기");
     
             // 그리드 컨테이너 크기 설정
             if (_gridContainer != null)
             {
                 _gridContainer.sizeDelta = new Vector2(_width * _cellSize, _height * _cellSize);
-                Debug.Log($"그리드 컨테이너 크기: {_gridContainer.sizeDelta}");
             }
             else
             {
@@ -114,15 +110,12 @@ namespace Game.Scripts.Inventory
                 Debug.LogError("아이템 또는 아이템 데이터가 null입니다");
                 return false;
             }
-    
-            Debug.Log($"CanPlaceItem 검사: 위치({gridX}, {gridY}), 크기({item.Width}x{item.Height})");
-    
+            
             // 그리드 범위 체크
             if (gridX < 0 || gridY < 0 || 
                 gridX + item.Width > _width || 
                 gridY + item.Height > _height)
             {
-                Debug.Log($"그리드 범위 초과: x={gridX}~{gridX+item.Width-1}, y={gridY}~{gridY+item.Height-1}");
                 return false;
             }
     
@@ -137,14 +130,11 @@ namespace Game.Scripts.Inventory
                         // 해당 셀이 이미 점유되었는지 확인
                         if (_grid[gridX + x, gridY + y] != null)
                         {
-                            Debug.Log($"셀 점유됨: ({gridX + x}, {gridY + y})");
                             return false;
                         }
                     }
                 }
             }
-    
-            Debug.Log("배치 가능!");
             return true;
         }
         
@@ -206,7 +196,7 @@ namespace Game.Scripts.Inventory
                         rectTransform.sizeDelta = new Vector2(_cellSize, _cellSize);
                 
                         // 색상 설정 (점유됨)
-                        UnityEngine.UI.Image image = highlight.GetComponent<UnityEngine.UI.Image>();
+                        Image image = highlight.GetComponent<Image>();
                         if (image != null)
                         {
                             image.color = new Color(0.8f, 0.2f, 0.2f, 0.5f); // 빨간색 (점유)
@@ -303,19 +293,7 @@ namespace Game.Scripts.Inventory
         
             int shapeHeight = shape.GetLength(0);
             int shapeWidth = shape.GetLength(1);
-    
-            // 디버깅 - 현재 모양 출력
-            string debugShape = "Current shape:\n";
-            for (int y = 0; y < shapeHeight; y++)
-            {
-                for (int x = 0; x < shapeWidth; x++)
-                {
-                    debugShape += shape[y, x] ? "■" : "□";
-                }
-                debugShape += "\n";
-            }
-            Debug.Log(debugShape);
-    
+            
             // 형태 데이터에 맞게 하이라이트 셀 생성
             for (int y = 0; y < shapeHeight; y++)
             {
@@ -338,10 +316,12 @@ namespace Game.Scripts.Inventory
                             rectTransform.sizeDelta = new Vector2(_cellSize, _cellSize);
                     
                             // 색상 설정
-                            UnityEngine.UI.Image image = highlight.GetComponent<UnityEngine.UI.Image>();
+                            Image image = highlight.GetComponent<Image>();
                             if (image != null)
                             {
-                                image.color = valid ? _validPlacementColor : _invalidPlacementColor;
+                                Color color = Color.blue;
+                                color.a = 1f;
+                                image.color = color;
                             }
                     
                             _highlightCells.Add(highlight);

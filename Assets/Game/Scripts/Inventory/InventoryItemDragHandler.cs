@@ -19,6 +19,7 @@ namespace Game.Scripts.Inventory
         private Vector2 _originalPosition;
         private Transform _originalParent;
         private bool _isDragging = false;
+        private bool _isInitialized = false;
         
         /// <summary>
         /// 드래그 중인지 여부를 나타내는 프로퍼티
@@ -47,9 +48,26 @@ namespace Game.Scripts.Inventory
             }
 
             _camera = _canvas?.worldCamera;
+            if (_camera == null)
+            {
+                _camera = Camera.main;
+            }
 
             // 인벤토리 그리드 찾기
             _inventoryGrid = FindAnyObjectByType<InventoryGrid>();
+        }
+        
+        private void Start()
+        {
+            // Start에서 InventoryItem 참조 가져오기
+            if (_itemReference == null)
+            {
+                _itemReference = GetComponent<InventoryItem>();
+                if (_itemReference != null && _itemReference.ItemData != null)
+                {
+                    _isInitialized = true;
+                }
+            }
         }
         
         private void Update()
@@ -57,12 +75,8 @@ namespace Game.Scripts.Inventory
             // 회전 키 처리 (R 키) - 드래그 중일 때만 작동
             if (Input.GetKeyDown(KeyCode.R) && _isDragging && _itemReference != null)
             {
-                Debug.Log("Update에서 R키 감지: 회전 시작");
                 _itemReference.RotateItem();
-        
-                // 중요: 회전 후 명시적으로 그리드 하이라이트 업데이트
                 UpdateGridHighlight();
-                Debug.Log("Update에서 회전 후 하이라이트 업데이트 호출");
             }
         }
 
@@ -73,6 +87,23 @@ namespace Game.Scripts.Inventory
         public void Initialize(InventoryItem item)
         {
             _itemReference = item;
+            _isInitialized = (_itemReference != null && _itemReference.ItemData != null);
+            
+            // 그리드 참조 확인 및 업데이트
+            if (_inventoryGrid == null)
+            {
+                _inventoryGrid = FindAnyObjectByType<InventoryGrid>();
+            }
+            
+            // 카메라 참조 확인 및 업데이트
+            if (_camera == null)
+            {
+                _camera = _canvas?.worldCamera;
+                if (_camera == null)
+                {
+                    _camera = Camera.main;
+                }
+            }
         }
         
         /// <summary>
@@ -91,7 +122,18 @@ namespace Game.Scripts.Inventory
         /// </summary>
         public void OnBeginDrag(PointerEventData eventData)
         {
-            if (_itemReference == null) return;
+            // 초기화 상태 확인
+            if (!_isInitialized && _itemReference == null)
+            {
+                _itemReference = GetComponent<InventoryItem>();
+                _isInitialized = (_itemReference != null && _itemReference.ItemData != null);
+            }
+            
+            if (_itemReference == null || _itemReference.ItemData == null) 
+            {
+                Debug.LogWarning("아이템 참조가 없어 드래그를 시작할 수 없습니다");
+                return;
+            }
             
             _originalPosition = _rectTransform.anchoredPosition;
             _originalParent = transform.parent;
@@ -115,12 +157,25 @@ namespace Game.Scripts.Inventory
     
             // 시각적 표시를 위한 이벤트 발생 - InventoryItemVisualizer에서 처리
             GetComponent<InventoryItemVisualizer>()?.OnBeginDrag();
+            
+            // 그리드 참조 재확인
+            if (_inventoryGrid == null)
+            {
+                _inventoryGrid = FindAnyObjectByType<InventoryGrid>();
+            }
+    
+            // 카메라 참조 재확인
+            if (_camera == null)
+            {
+                _camera = _canvas?.worldCamera;
+                if (_camera == null)
+                {
+                    _camera = Camera.main;
+                }
+            }
     
             // 드래그 시작 시 명시적으로 하이라이트 업데이트
             UpdateGridHighlight();
-    
-            // 디버그 로그
-            Debug.Log("드래그 시작: 위치 = " + eventData.position);
         }
 
         /// <summary>
@@ -145,16 +200,25 @@ namespace Game.Scripts.Inventory
             }
             else
             {
-                Debug.LogWarning("_inventoryGrid가 null입니다");
+                // 그리드 참조가 없는 경우 찾기 시도
+                _inventoryGrid = FindAnyObjectByType<InventoryGrid>();
+                if (_inventoryGrid != null)
+                {
+                    UpdateGridHighlight();
+                }
+                else
+                {
+                    Debug.LogWarning("_inventoryGrid를 찾을 수 없습니다");
+                }
             }
         }
 
         /// <summary>
-        /// 드래그 종료 처리
+        /// 드래그 종료
         /// </summary>
         public void OnEndDrag(PointerEventData eventData)
         {
-            if (_itemReference == null) return;
+            if (_itemReference == null || !_isInitialized) return;
             
             _isDragging = false;
 
@@ -193,7 +257,27 @@ namespace Game.Scripts.Inventory
         /// </summary>
         private void UpdateGridHighlight()
         {
-            if (_inventoryGrid == null || _itemReference == null || _itemReference.ItemData == null || _camera == null) return;
+            if (_itemReference == null || _itemReference.ItemData == null) 
+            {
+                Debug.LogWarning("아이템 참조가 없어 하이라이트를 업데이트할 수 없습니다");
+                return;
+            }
+            
+            if (_inventoryGrid == null) 
+            {
+                Debug.LogWarning("그리드 참조가 없어 하이라이트를 업데이트할 수 없습니다");
+                return;
+            }
+            
+            if (_camera == null)
+            {
+                _camera = Camera.main;
+                if (_camera == null)
+                {
+                    Debug.LogWarning("카메라 참조가 없어 하이라이트를 업데이트할 수 없습니다");
+                    return;
+                }
+            }
 
             // 마우스 위치를 그리드 좌표로 변환 시도
             if (_inventoryGrid.TryGetGridCoordinates(Input.mousePosition, _camera, out int gridX, out int gridY))
@@ -216,8 +300,12 @@ namespace Game.Scripts.Inventory
         {
             if (_inventoryGrid == null)
             {
-                Debug.LogError("인벤토리 그리드 참조가 없습니다");
-                return false;
+                _inventoryGrid = FindAnyObjectByType<InventoryGrid>();
+                if (_inventoryGrid == null)
+                {
+                    Debug.LogError("인벤토리 그리드 참조를 찾을 수 없습니다");
+                    return false;
+                }
             }
     
             if (_itemReference == null || _itemReference.ItemData == null)
@@ -228,20 +316,19 @@ namespace Game.Scripts.Inventory
     
             if (_camera == null)
             {
-                Debug.LogWarning("카메라 참조가 없습니다. 메인 카메라를 사용합니다.");
                 _camera = Camera.main;
+                if (_camera == null)
+                {
+                    Debug.LogError("카메라 참조를 찾을 수 없습니다");
+                    return false;
+                }
             }
-    
-            Debug.Log("TryPlaceOnGrid 호출됨: 마우스 위치 " + Input.mousePosition);
     
             // 마우스 위치를 그리드 좌표로 변환 시도
             if (_inventoryGrid.TryGetGridCoordinates(Input.mousePosition, _camera, out int gridX, out int gridY))
             {
-                Debug.Log($"그리드 좌표 변환 성공: ({gridX}, {gridY})");
-        
                 // 배치 가능 여부 확인
                 bool canPlace = _inventoryGrid.CanPlaceItem(_itemReference, gridX, gridY);
-                Debug.Log("배치 가능: " + canPlace);
         
                 // 배치 시도
                 if (_inventoryGrid.PlaceItem(_itemReference, gridX, gridY))
@@ -264,10 +351,6 @@ namespace Game.Scripts.Inventory
                     }
     
                     return true;
-                }
-                else
-                {
-                    Debug.Log("아이템 배치 실패: PlaceItem 반환값 false");
                 }
             }
             else

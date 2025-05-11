@@ -1,10 +1,19 @@
 using System.Collections.Generic;
 using UnityEngine;
-using Game.Scripts.Building;
-using Game.Scripts.Inventory;
 
 namespace Game.Scripts.Inventory
 {
+    /// <summary>
+    /// 타일 배치 데이터 클래스
+    /// </summary>
+    [System.Serializable]
+    public class TilePlacementData
+    {
+        public InventoryItemData itemData;
+        public int x;
+        public int y;
+    }
+    
     /// <summary>
     /// 인벤토리 데이터 관리 싱글톤 클래스
     /// </summary>
@@ -53,28 +62,13 @@ namespace Game.Scripts.Inventory
         }
         
         /// <summary>
-        /// 인벤토리에서 게임으로 타일 데이터 전송
-        /// </summary>
-        public void TransferTilesToGame()
-        {
-            // 기존 BuildingManager 데이터 클리어
-            BuildingManager.PlacedTiles.Clear();
-            
-            // 현재 인벤토리 데이터 복사
-            foreach (TilePlacementData tileData in _placedTiles)
-            {
-                BuildingManager.PlacedTiles.Add(tileData);
-            }
-            
-            Debug.Log($"게임으로 {_placedTiles.Count}개 타일 전송 완료");
-        }
-        
-        /// <summary>
         /// 인벤토리 그리드에서 타일 데이터 수집
         /// </summary>
         /// <param name="grid">인벤토리 그리드</param>
-        public void CollectTilesFromGrid(InventoryGrid grid)
+        public void CollectTilesFromGrid()
         {
+            InventoryGrid grid = FindAnyObjectByType<InventoryGrid>();
+            
             if (grid == null) return;
             
             // 기존 데이터 클리어
@@ -85,14 +79,14 @@ namespace Game.Scripts.Inventory
             
             foreach (InventoryItem item in items)
             {
-                // 아이템을 타일 데이터로 변환
-                TileData tileData = item.ConvertToTileData();
+                // 아이템 데이터 가져오기
+                InventoryItemData itemData = item.ItemData;
                 
-                if (tileData != null)
+                if (itemData != null)
                 {
                     TilePlacementData placementData = new TilePlacementData
                     {
-                        tileData = tileData,
+                        itemData = itemData,
                         x = item.GridX,
                         y = item.GridY
                     };

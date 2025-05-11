@@ -1,14 +1,27 @@
 using UnityEngine;
 using System;
-using Game.Scripts.Building;
 
 namespace Game.Scripts.Inventory
 {
+    /// <summary>
+    /// 테스트용 아이템 형상 타입
+    /// </summary>
+    public enum ItemShapeType
+    {
+        Single,     // 1칸짜리
+        Double,     // 2칸짜리 (가로)
+        LShape,     // 3칸짜리 ㄱ 형태
+        TetrisL,    // 4칸짜리 (기존 L 형태)
+        Horizontal4 // 4칸짜리 (가로 4칸)
+    }
+
     /// <summary>
     /// 인벤토리 아이템 기본 클래스 - 아이템 데이터와 그리드 위치 관리
     /// </summary>
     public class InventoryItem : MonoBehaviour
     {
+        [SerializeField] private InventoryItemData _itemDataTemplate;
+        
         private InventoryItemData _itemData;
         private int _gridX = -1;
         private int _gridY = -1;
@@ -23,6 +36,23 @@ namespace Game.Scripts.Inventory
         {
             get => _itemData;
             private set => _itemData = value;
+        }
+
+        /// <summary>
+        /// 아이템 데이터 템플릿 프로퍼티
+        /// </summary>
+        public InventoryItemData ItemDataTemplate
+        {
+            get => _itemDataTemplate;
+            set 
+            { 
+                _itemDataTemplate = value;
+                if (_itemDataTemplate != null)
+                {
+                    // 템플릿이 변경되면 새로운 인스턴스 생성
+                    InitializeFromTemplate();
+                }
+            }
         }
 
         /// <summary>
@@ -86,18 +116,42 @@ namespace Game.Scripts.Inventory
 
         void Start()
         {
-            // 임시 아이템 데이터 생성 (L 모양) - 실제 구현에서는 제거하고 외부에서 설정
+            if (_itemDataTemplate != null)
+            {
+                // 템플릿에서 아이템 데이터 초기화
+                InitializeFromTemplate();
+            }
+            else
+            {
+                // 템플릿이 없으면 기본 아이템 데이터 생성
+                Debug.LogWarning("ItemDataTemplate이 설정되지 않았습니다. 기본값으로 초기화합니다.");
+                CreateDefaultItemData();
+            }
+        }
+
+        /// <summary>
+        /// 템플릿에서 아이템 데이터 초기화
+        /// </summary>
+        private void InitializeFromTemplate()
+        {
+            // 템플릿 복제
+            _itemData = _itemDataTemplate.Clone();
+            
+            // 시각화 및 드래그 핸들러 초기화
+            _visualizer?.Initialize(_itemData);
+            _dragHandler?.Initialize(this);
+        }
+
+        /// <summary>
+        /// 기본 아이템 데이터 생성
+        /// </summary>
+        private void CreateDefaultItemData()
+        {
+            // 임시 아이템 데이터 생성
             InventoryItemData tempData = ScriptableObject.CreateInstance<InventoryItemData>();
-            tempData.ItemName = "Test L-Shape";
-            tempData.ItemSprite = GetComponentInChildren<UnityEngine.UI.Image>().sprite;
-    
-            // L 모양 설정 (3x2)
-            bool[,] shapeData = new bool[2, 3] {
-                { true, false, false },
-                { true, true, true }
-            };
-            tempData.ShapeData = shapeData;
-    
+            tempData.ItemName = "Default Item";
+            tempData.ItemSprite = GetComponentInChildren<UnityEngine.UI.Image>()?.sprite;
+            
             // 아이템 초기화
             Initialize(tempData);
         }
@@ -149,27 +203,6 @@ namespace Game.Scripts.Inventory
             
             // 드래그 핸들러에 회전 이벤트 전달
             _dragHandler?.OnItemRotated();
-        }
-        
-        /// <summary>
-        /// 아이템 데이터를 TileData로 변환 (Building 시스템과 호환용)
-        /// </summary>
-        public TileData ConvertToTileData()
-        {
-            if (_itemData == null) return null;
-
-            TileData tileData = ScriptableObject.CreateInstance<TileData>();
-            tileData.type = _itemData.TileType;
-            tileData.tileSprite = _itemData.ItemSprite;
-
-            // 아이템 형태를 기반으로 너비와 높이 설정
-            tileData.width = _itemData.Width;
-            tileData.height = _itemData.Height;
-
-            // 속성 설정
-            tileData.damage = _itemData.Damage;
-
-            return tileData;
         }
     }
 }

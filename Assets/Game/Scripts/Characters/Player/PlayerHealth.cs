@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using System.Collections;
 
 namespace Game.Scripts.Characters.Player
 {
@@ -11,6 +12,7 @@ namespace Game.Scripts.Characters.Player
         private int _maxHealth = 100;
         private int _currentHealth;
         private bool _isInvincible = false;
+        private Coroutine _invincibilityCoroutine;
         
         public int MaxHealth { get => _maxHealth; set => _maxHealth = value; }
         public int CurrentHealth { get => _currentHealth; set => _currentHealth = value; }
@@ -79,12 +81,61 @@ namespace Game.Scripts.Characters.Player
         }
         
         /// <summary>
+        /// 지속시간이 있는 무적 상태 설정
+        /// </summary>
+        /// <param name="invincible">무적 상태 여부</param>
+        /// <param name="duration">지속 시간(초)</param>
+        public void SetInvincible(bool invincible, float duration)
+        {
+            // 이미 실행 중인 코루틴이 있다면 중지
+            if (_invincibilityCoroutine != null)
+            {
+                StopCoroutine(_invincibilityCoroutine);
+                _invincibilityCoroutine = null;
+            }
+            
+            // 무적 상태 설정
+            SetInvincible(invincible);
+            
+            // 지속 시간 설정
+            if (invincible && duration > 0)
+            {
+                _invincibilityCoroutine = StartCoroutine(InvincibilityTimer(duration));
+            }
+        }
+        
+        /// <summary>
+        /// 무적 상태 타이머
+        /// </summary>
+        private IEnumerator InvincibilityTimer(float duration)
+        {
+            Debug.Log($"무적 상태 시작: {duration}초 동안 지속");
+            
+            yield return new WaitForSeconds(duration);
+            
+            SetInvincible(false);
+            _invincibilityCoroutine = null;
+            
+            Debug.Log("무적 상태 종료");
+        }
+        
+        /// <summary>
         /// 사망 처리
         /// </summary>
         private void Die()
         {
             Debug.Log("플레이어 사망");
             OnPlayerDeath?.Invoke();
+        }
+        
+        private void OnDestroy()
+        {
+            // 실행 중인 코루틴이 있다면 중지
+            if (_invincibilityCoroutine != null)
+            {
+                StopCoroutine(_invincibilityCoroutine);
+                _invincibilityCoroutine = null;
+            }
         }
     }
 }

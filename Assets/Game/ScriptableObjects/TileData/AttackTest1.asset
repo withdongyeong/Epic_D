@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5259a72f251a42dc9a98ef4e92ff7792, type: 3}
+  m_Name: AttackTest1
+  m_EditorClassIdentifier: 
+  _itemName: "\uACF5\uACA91"
+  _itemSprite: {fileID: 7482667652216324306, guid: 75f5f34dc1b5347e0b8351032682f224, type: 3}
+  _spritePivot: {x: 0.5, y: 0.5}
+  _shapeType: 0
+  _tileType: 0
+  _chargeTime: 5
+  _damage: 10
+  _invincibilityDuration: 5
+  _healAmount: 10
+  _obstacleDuration: 5
+  _cost: 1

@@ -227,7 +227,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerPrefab: {fileID: 3249486552240177032, guid: 0d88e0c8a04f8f84d8546c1704a819fa, type: 3}
   attackTilePrefab: {fileID: 8060270764348269698, guid: dff2e65ef4a7e2148a6b2a59d3171e12, type: 3}
+  defenseTilePrefab: {fileID: 8060270764348269698, guid: 2ea20452ac934ed43875ff1d517ee3fb, type: 3}
+  healTilePrefab: {fileID: 8060270764348269698, guid: e67d7262610efd646bddedfb87209267, type: 3}
   enemyPrefab: {fileID: 1659124101946197762, guid: b279acf2f078cf44c8bf417e80f2ba03, type: 3}
+  highlightTilePrefab: {fileID: 2088068471157347722, guid: b158c356a8eb54e469824f348eaa9b94, type: 3}
 --- !u!4 &283686389
 Transform:
   m_ObjectHideFlags: 0

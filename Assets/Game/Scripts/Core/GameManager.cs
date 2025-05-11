@@ -1,9 +1,9 @@
 using Game.Scripts.Characters.Enemies;
 using Game.Scripts.Characters.Player;
 using Game.Scripts.Tiles;
-using Game.Scripts.Building;
 using UnityEngine;
 using System.Collections.Generic;
+using Game.Scripts.Inventory;
 
 namespace Game.Scripts.Core
 {
@@ -15,7 +15,7 @@ namespace Game.Scripts.Core
         public GameObject playerPrefab;
         public GameObject attackTilePrefab;
         public GameObject defenseTilePrefab;
-        public GameObject buffTilePrefab;
+        public GameObject healTilePrefab;
         public GameObject enemyPrefab;
         
         private GridSystem _gridSystem;
@@ -23,6 +23,7 @@ namespace Game.Scripts.Core
         private PlayerController _player;
         private PlayerHealth _playerHealth;
         private GameStateManager _gameStateManager;
+        public GameObject highlightTilePrefab;
         
         void Start()
         {
@@ -30,14 +31,13 @@ namespace Game.Scripts.Core
             _gameStateManager = GameStateManager.Instance;
             
             // 빌딩 씬에서 배치한 타일 생성
-            if (BuildingManager.PlacedTiles.Count > 0)
+            if (InventoryManager.Instance.PlacedTiles.Count > 0)
             {
                 CreateTilesFromBuildingData();
             }
             else
             {
-                // 기본 타일 배치 (빌딩 데이터가 없을 경우)
-                InitializeDefaultGrid();
+                Debug.LogWarning("빈 인벤토리로 게임에 왔어요!! 죽으셔야해요!");
             }
             
             SpawnPlayer();
@@ -47,82 +47,140 @@ namespace Game.Scripts.Core
             _gameStateManager.StartGame();
         }
         
-        /// <summary>
-        /// 빌딩 씬 데이터 기반으로 타일 생성
-        /// </summary>
         private void CreateTilesFromBuildingData()
         {
-            foreach (TilePlacementData placementData in BuildingManager.PlacedTiles)
+            // 그리드 총 행 수 정의
+            int totalRows = 8;
+            
+            // 선명한 색상 팔레트 정의 (20가지)
+            Color[] colorPalette = new Color[]
             {
-                TileData tileData = placementData.tileData;
-                GameObject tilePrefab = GetTilePrefabByType(tileData.type);
+                new Color(1.0f, 0.0f, 0.0f, 0.7f),       // 빨강
+                new Color(0.0f, 1.0f, 0.0f, 0.7f),       // 녹색
+                new Color(0.0f, 0.0f, 1.0f, 0.7f),       // 파랑
+                new Color(1.0f, 1.0f, 0.0f, 0.7f),       // 노랑
+                new Color(1.0f, 0.0f, 1.0f, 0.7f),       // 마젠타
+                new Color(0.0f, 1.0f, 1.0f, 0.7f),       // 시안
+                new Color(1.0f, 0.5f, 0.0f, 0.7f),       // 주황
+                new Color(0.5f, 0.0f, 1.0f, 0.7f),       // 보라
+                new Color(0.0f, 0.5f, 1.0f, 0.7f),       // 하늘색
+                new Color(0.5f, 1.0f, 0.0f, 0.7f),       // 라임
+                new Color(1.0f, 0.0f, 0.5f, 0.7f),       // 핑크
+                new Color(0.0f, 1.0f, 0.5f, 0.7f),       // 민트
+                new Color(0.5f, 0.5f, 1.0f, 0.7f),       // 라벤더
+                new Color(1.0f, 0.5f, 0.5f, 0.7f),       // 살구색
+                new Color(0.5f, 1.0f, 0.5f, 0.7f),       // 연두
+                new Color(0.7f, 0.3f, 0.0f, 0.7f),       // 갈색
+                new Color(0.0f, 0.7f, 0.3f, 0.7f),       // 청록
+                new Color(0.3f, 0.0f, 0.7f, 0.7f),       // 남색
+                new Color(0.7f, 0.0f, 0.3f, 0.7f),       // 자주
+                new Color(0.3f, 0.7f, 0.0f, 0.7f)        // 올리브
+            };
+            
+            // 색상 인덱스 (순차적으로 색상 할당)
+            int colorIndex = 0;
+            
+            foreach (TilePlacementData placementData in InventoryManager.Instance.PlacedTiles)
+            {
+                // InventoryItemData 사용
+                InventoryItemData itemData = placementData.itemData;
                 
-                if (tilePrefab != null)
+                if (itemData != null)
                 {
-                    // 회전 상태에 따른 실제 크기 계산
-                    int width = tileData.rotation == 90 || tileData.rotation == 270 ? tileData.height : tileData.width;
-                    int height = tileData.rotation == 90 || tileData.rotation == 270 ? tileData.width : tileData.height;
+                    GameObject tilePrefab = GetTilePrefabByType(itemData.TileType);
                     
-                    // 타일 원점(좌상단) 위치
-                    int startX = placementData.x;
-                    int startY = placementData.y;
-                    
-                    // 타일 중심 위치 계산
-                    Vector3 centerPos = _gridSystem.GetWorldPosition(startX, startY);
-                    
-                    // 타일 생성
-                    GameObject tileObj = Instantiate(tilePrefab, centerPos, Quaternion.Euler(0, 0, tileData.rotation));
-                    BaseTile tile = tileObj.GetComponent<BaseTile>();
-                    
-                    // 타일 속성 설정
-                    if (tile is AttackTile attackTile)
+                    if (tilePrefab != null)
                     {
-                        attackTile.Damage = tileData.damage;
-                    }
-                    
-                    // 그리드에 타일 등록 (해당 타일이 차지하는 모든 셀)
-                    for (int y = 0; y < height; y++)
-                    {
-                        for (int x = 0; x < width; x++)
+                        // 타일 원점(좌상단) 위치
+                        int startX = placementData.x;
+                        int startY = totalRows - 1 - placementData.y;
+                        
+                        // 타일 중심 위치 계산
+                        Vector3 centerPos = _gridSystem.GetWorldPosition(startX, startY);
+                        
+                        // 타일 생성 (회전값은 0으로 설정 - ShapeData에 이미 회전이 반영됨)
+                        GameObject tileObj = Instantiate(tilePrefab, centerPos, Quaternion.identity);
+                        BaseTile tile = tileObj.GetComponent<BaseTile>();
+                        
+                        // 타일 속성 설정 (InventoryItemData 기반)
+                        if (tile is AttackTile attackTile)
                         {
-                            _gridSystem.RegisterTile(tile, startX + x, startY + y);
+                            attackTile.Damage = itemData.Damage;
+                        }
+                        else if (tile is DefenseTile defenseTile)
+                        {
+                            defenseTile.InvincibilityDuration = itemData.InvincibilityDuration;
+                        }
+                        else if (tile is HealTile healTile)
+                        {
+                            healTile.HealAmount = itemData.HealAmount;
+                        }
+                        else if (tile is ObstacleTile obstacleTile)
+                        {
+                            obstacleTile.Duration = itemData.ObstacleDuration;
+                        }
+                        
+                        // 팔레트에서 순차적으로 색상 선택
+                        Color tileColor = colorPalette[colorIndex % colorPalette.Length];
+                        // 다음 타일은 다음 색상 사용
+                        colorIndex++;
+                        
+                        // ShapeData에서 실제로 차지하는 셀 정보 사용 (Y축 반전)
+                        bool[,] shapeData = itemData.ShapeData;
+                        for (int y = 0; y < itemData.Height; y++)
+                        {
+                            for (int x = 0; x < itemData.Width; x++)
+                            {
+                                // Y축 반전하여 배치 (아래에서 위로)
+                                int invertedY = itemData.Height - 1 - y;
+                                
+                                // 해당 위치에 타일이 존재하는 경우에만 처리
+                                if (shapeData[invertedY, x])
+                                {
+                                    int gridX = startX + x;
+                                    int gridY = startY + y - itemData.Height + 1; // Height만큼 아래로 이동
+                                    
+                                    _gridSystem.RegisterTile(tile, gridX, gridY);
+                                    
+                                    // 하이라이트 타일 추가 (실제 차지하는 셀만)
+                                    if (highlightTilePrefab != null)
+                                    {
+                                        Vector3 worldPos = _gridSystem.GetWorldPosition(gridX, gridY);
+                                        GameObject highlight = Instantiate(highlightTilePrefab, worldPos, Quaternion.identity);
+                                        
+                                        // 하이라이트에 색상 적용
+                                        SpriteRenderer renderer = highlight.GetComponentInChildren<SpriteRenderer>();
+                                        if (renderer != null)
+                                        {
+                                            renderer.color = tileColor;
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             }
             
-            Debug.Log($"빌딩 데이터에서 {BuildingManager.PlacedTiles.Count}개 타일 생성 완료");
+            Debug.Log($"빌딩 데이터에서 {InventoryManager.Instance.PlacedTiles.Count}개 타일 생성 완료");
         }
-        
-        /// <summary>
-        /// 타일 타입에 따른 프리팹 반환
-        /// </summary>
-        private GameObject GetTilePrefabByType(TileData.TileType type)
+
+        // TileType으로 프리팹 가져오기
+        private GameObject GetTilePrefabByType(TileType type)
         {
             switch (type)
             {
-                case TileData.TileType.Attack:
+                case TileType.Attack:
                     return attackTilePrefab;
-                case TileData.TileType.Defense:
+                case TileType.Defense:
                     return defenseTilePrefab;
-                case TileData.TileType.Buff:
-                    return buffTilePrefab;
+                case TileType.Heal:
+                    return healTilePrefab;
                 default:
-                    return attackTilePrefab;
+                    return null;
             }
         }
-    
-        /// <summary>
-        /// 기본 그리드 초기화 (빌딩 데이터가 없을 경우)
-        /// </summary>
-        private void InitializeDefaultGrid()
-        {
-            // 테스트용 타일 배치
-            SpawnTile(attackTilePrefab, 2, 2);
-            SpawnTile(attackTilePrefab, 4, 3);
-            SpawnTile(attackTilePrefab, 1, 5);
-        }
-    
+        
         /// <summary>
         /// 타일 생성 및 그리드 등록
         /// </summary>

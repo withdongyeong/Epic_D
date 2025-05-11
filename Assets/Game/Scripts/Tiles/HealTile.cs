@@ -3,22 +3,17 @@ using UnityEngine;
 
 namespace Game.Scripts.Tiles
 {
-    /// <summary>
-    /// 회복 타일 클래스 - 플레이어 체력 회복
-    /// </summary>
     public class HealTile : BaseTile
     {
-        [SerializeField] private int _healAmount = 10;
+        [SerializeField] private int _healAmount = 25;
+        [SerializeField] private GameObject _healEffectPrefab;
+        
         private PlayerHealth _playerHealth;
         
-        /// <summary>
-        /// 회복량 프로퍼티
-        /// </summary>
         public int HealAmount { get => _healAmount; set => _healAmount = value; }
         
         private void Start()
         {
-            // 플레이어 참조 찾기
             _playerHealth = FindAnyObjectByType<PlayerHealth>();
         }
         
@@ -28,34 +23,41 @@ namespace Game.Scripts.Tiles
         public override void Activate()
         {
             base.Activate();
-            
             if (GetState() == TileState.Activated && _playerHealth != null)
             {
-                ApplyHealing();
+                HealPlayer();
             }
         }
         
         /// <summary>
-        /// 플레이어에게 회복 효과 적용
+        /// 플레이어 체력 회복 처리
         /// </summary>
-        private void ApplyHealing()
+        private void HealPlayer()
         {
-            // PlayerHealth 클래스의 힐링 메서드 호출
+            // 플레이어 체력 회복
             _playerHealth.Heal(_healAmount);
             
-            // 회복 시각 효과 표시
-            ShowHealEffect();
+            // 회복 이펙트 생성
+            CreateHealEffect();
         }
         
         /// <summary>
-        /// 회복 효과 시각화
+        /// 회복 이펙트 생성
         /// </summary>
-        private void ShowHealEffect()
+        private void CreateHealEffect()
         {
-            Debug.Log($"회복 효과 적용: {_healAmount} HP 회복");
-            
-            // 회복 파티클 효과나 애니메이션 재생
-            // 여기에 파티클 시스템이나 시각 효과 추가
+            if (_healEffectPrefab != null && _playerHealth != null)
+            {
+                // 플레이어 위치에 회복 이펙트 생성
+                GameObject effectObj = Instantiate(
+                    _healEffectPrefab,
+                    _playerHealth.transform.position,
+                    Quaternion.identity
+                );
+                
+                // 일정 시간 후 이펙트 제거
+                Destroy(effectObj, 0.1f);
+            }
         }
     }
 }

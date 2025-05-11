@@ -50,6 +50,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   projectilePrefab: {fileID: 3867617096255318561, guid: fe30c6ea4c461364084f5b75aa32af2a, type: 3}
   warningTilePrefab: {fileID: 1845840710705793256, guid: 0d9934601aa76b04f902fe9112847086, type: 3}
+  explosionEffectPrefab: {fileID: 2655093744207988788, guid: 1f85733174b02924cb68fea37977ea9f, type: 3}
 --- !u!61 &4193031084251287229
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -480,8 +481,8 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 1, g: 0, b: 0, a: 1}
+  m_Sprite: {fileID: -740672183275674872, guid: a68d9d4535fed0c44a75e0e5708e33b5, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
