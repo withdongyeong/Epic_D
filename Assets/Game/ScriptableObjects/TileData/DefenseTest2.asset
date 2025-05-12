@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: DefenseTest2
   m_EditorClassIdentifier: 
   _itemName: "\uBC29\uC5B42"
-  _itemSprite: {fileID: 21300000, guid: ee8ce5cd9c0883f4182b5cfd43cfd7fe, type: 3}
+  _itemSprite: {fileID: 2747690628134850419, guid: 16037dbd798344f57a526d53d48f5ead, type: 3}
   _spritePivot: {x: 0.5, y: 0.5}
   _shapeType: 1
   _tileType: 1
-  _chargeTime: 15
+  _chargeTime: 13
   _damage: 10
-  _invincibilityDuration: 1.5
+  _invincibilityDuration: 2
   _healAmount: 10
   _obstacleDuration: 5
   _cost: 2

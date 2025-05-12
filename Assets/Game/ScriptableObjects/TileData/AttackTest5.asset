@@ -17,8 +17,8 @@ MonoBehaviour:
   _spritePivot: {x: 0.5, y: 0.5}
   _shapeType: 4
   _tileType: 0
-  _chargeTime: 5
-  _damage: 50
+  _chargeTime: 3
+  _damage: 20
   _invincibilityDuration: 5
   _healAmount: 10
   _obstacleDuration: 5

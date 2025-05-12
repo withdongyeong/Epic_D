@@ -17,7 +17,7 @@ namespace Game.Scripts.Characters.Enemies
         private GridSystem _gridSystem;
         private PlayerController _player;
         private PlayerHealth _playerHealth;
-        private float _patternCooldown = 0.7f; // 패턴 간 딜레이
+        private float _patternCooldown = 0.6f; // 패턴 간 딜레이
         
         public GameObject projectilePrefab;
         public GameObject warningTilePrefab;
@@ -27,6 +27,9 @@ namespace Game.Scripts.Characters.Enemies
         public GameObject meteorPrefab;
         public float meteorHoverHeight = 2f; // 몬스터 머리 위에 떠있는 높이
         public float meteorTravelDuration = 1.5f; // 날아가는 시간
+
+        public GameObject magicSwordPrefab;
+        public float swordTravelDuration = 1f;
         
         void Start()
         {
@@ -107,14 +110,14 @@ namespace Game.Scripts.Characters.Enemies
         }
         
         /// <summary>
-        /// 패턴 2: 플레이어 위치 범위 공격
+        /// 패턴 2: 플레이어 위치 범위 공격 (매직 소드 애니메이션 추가)
         /// </summary>
         private IEnumerator AreaAttack()
         {
             // 플레이어 위치 가져오기
             int playerX, playerY;
             _gridSystem.GetXY(_player.transform.position, out playerX, out playerY);
-            
+    
             // 경고 타일 표시 (3x3 영역)
             GameObject[] warningTiles = new GameObject[9]; // 3x3 = 9
             int index = 0;
@@ -125,7 +128,7 @@ namespace Game.Scripts.Characters.Enemies
                 {
                     int tileX = playerX + x;
                     int tileY = playerY + y;
-            
+    
                     if (_gridSystem.IsValidPosition(tileX, tileY))
                     {
                         Vector3 tilePos = _gridSystem.GetWorldPosition(tileX, tileY);
@@ -134,17 +137,26 @@ namespace Game.Scripts.Characters.Enemies
                     }
                 }
             }
-            
+    
+            // 타겟 영역 중앙 위치 계산
+            Vector3 targetCenter = _gridSystem.GetWorldPosition(playerX, playerY);
+    
+            // 매직 소드 애니메이션 시작 - 1.5초 대기 시간에 맞춤
+            if (magicSwordPrefab != null)
+            {
+                StartCoroutine(MagicSwordAnimation(targetCenter, 1.5f));
+            }
+    
             // 경고 대기
             yield return new WaitForSeconds(1.5f);
-            
+    
             // 플레이어가 영역 내에 있는지 확인
             _gridSystem.GetXY(_player.transform.position, out int currentX, out int currentY);
             if (Mathf.Abs(currentX - playerX) <= 1 && Mathf.Abs(currentY - playerY) <= 1)
             {
                 ApplyDamageWithEffect(15);
             }
-            
+    
             // 공격 영역에 폭발 이펙트 생성
             for (int x = -1; x <= 1; x++)
             {
@@ -152,7 +164,7 @@ namespace Game.Scripts.Characters.Enemies
                 {
                     int tileX = playerX + x;
                     int tileY = playerY + y;
-            
+    
                     if (_gridSystem.IsValidPosition(tileX, tileY))
                     {
                         Vector3 tilePos = _gridSystem.GetWorldPosition(tileX, tileY);
@@ -160,7 +172,7 @@ namespace Game.Scripts.Characters.Enemies
                     }
                 }
             }
-            
+    
             // 경고 타일 제거
             foreach (GameObject tile in warningTiles)
             {
@@ -313,64 +325,74 @@ namespace Game.Scripts.Characters.Enemies
             }
         }
         
-        /// <summary>
-        /// 패턴 6 : 연속 영역 공격
-        /// </summary>
-        private IEnumerator MultiAreaAttack()
+/// <summary>
+/// 패턴 6 : 연속 영역 공격 (매직 소드 애니메이션 추가)
+/// </summary>
+private IEnumerator MultiAreaAttack()
+{
+    for (int i = 0; i < 3; i++)
+    {
+        // 랜덤 위치 선택
+        int targetX = Random.Range(0, _gridSystem.Width);
+        int targetY = Random.Range(0, _gridSystem.Height);
+
+        // 경고 타일 생성 (2x2 영역)
+        List<GameObject> warningTiles = new List<GameObject>();
+        List<Vector3> attackPositions = new List<Vector3>();
+
+        for (int x = 0; x < 2; x++)
         {
-            for (int i = 0; i < 3; i++)
+            for (int y = 0; y < 2; y++)
             {
-                // 랜덤 위치 선택
-                int targetX = Random.Range(0, _gridSystem.Width);
-                int targetY = Random.Range(0, _gridSystem.Height);
+                int tileX = targetX + x;
+                int tileY = targetY + y;
         
-                // 경고 타일 생성 (2x2 영역)
-                List<GameObject> warningTiles = new List<GameObject>();
-                List<Vector3> attackPositions = new List<Vector3>();
-        
-                for (int x = 0; x < 2; x++)
+                if (_gridSystem.IsValidPosition(tileX, tileY))
                 {
-                    for (int y = 0; y < 2; y++)
-                    {
-                        int tileX = targetX + x;
-                        int tileY = targetY + y;
-                
-                        if (_gridSystem.IsValidPosition(tileX, tileY))
-                        {
-                            Vector3 tilePos = _gridSystem.GetWorldPosition(tileX, tileY);
-                            attackPositions.Add(tilePos);
-                            warningTiles.Add(Instantiate(warningTilePrefab, tilePos, Quaternion.identity));
-                        }
-                    }
+                    Vector3 tilePos = _gridSystem.GetWorldPosition(tileX, tileY);
+                    attackPositions.Add(tilePos);
+                    warningTiles.Add(Instantiate(warningTilePrefab, tilePos, Quaternion.identity));
                 }
-        
-                yield return new WaitForSeconds(0.6f);
-        
-                // 공격 실행
-                _gridSystem.GetXY(_player.transform.position, out int playerX, out int playerY);
-                bool isHit = playerX >= targetX && playerX < targetX + 2 && 
-                             playerY >= targetY && playerY < targetY + 2;
-        
-                if (isHit)
-                {
-                    ApplyDamageWithEffect(10);
-                }
-                
-                // 공격 영역에 폭발 이펙트 생성
-                foreach (Vector3 pos in attackPositions)
-                {
-                    CreateDamageEffect(pos);
-                }
-        
-                // 경고 타일 제거
-                foreach (GameObject tile in warningTiles)
-                {
-                    Destroy(tile);
-                }
-        
-                yield return new WaitForSeconds(0.3f);
             }
         }
+        
+        // 타겟 영역 중앙 위치 계산 (2x2 영역의 중심)
+        Vector3 targetCenter = _gridSystem.GetWorldPosition(targetX, targetY) + 
+                              new Vector3(_gridSystem.CellSize / 2, _gridSystem.CellSize / 2, 0);
+        
+        // 매직 소드 애니메이션 시작 - 0.6초 대기 시간에 맞춤
+        if (magicSwordPrefab != null)
+        {
+            StartCoroutine(MagicSwordAnimation(targetCenter, 0.6f));
+        }
+
+        yield return new WaitForSeconds(0.6f);
+
+        // 공격 실행
+        _gridSystem.GetXY(_player.transform.position, out int playerX, out int playerY);
+        bool isHit = playerX >= targetX && playerX < targetX + 2 && 
+                     playerY >= targetY && playerY < targetY + 2;
+
+        if (isHit)
+        {
+            ApplyDamageWithEffect(10);
+        }
+        
+        // 공격 영역에 폭발 이펙트 생성
+        foreach (Vector3 pos in attackPositions)
+        {
+            CreateDamageEffect(pos);
+        }
+
+        // 경고 타일 제거
+        foreach (GameObject tile in warningTiles)
+        {
+            Destroy(tile);
+        }
+
+        yield return new WaitForSeconds(0.3f);
+    }
+}
         
         /// <summary>
         /// 패턴 7 : 대각선 공격
@@ -526,7 +548,7 @@ namespace Game.Scripts.Characters.Enemies
             }
         }
         
-                /// <summary>
+        /// <summary>
         /// 메테오 애니메이션 처리
         /// </summary>
         private IEnumerator MeteorAnimation(Vector3 targetPosition, float duration)
@@ -534,48 +556,109 @@ namespace Game.Scripts.Characters.Enemies
             // 메테오 생성 (몬스터 머리 위에 생성)
             Vector3 startPosition = transform.position + Vector3.up * meteorHoverHeight;
             GameObject meteor = Instantiate(meteorPrefab, startPosition, Quaternion.identity);
-            
-            // 초기 호버링 효과
-            float hoverTime = 0.5f;
-            Vector3 hoverStartPos = startPosition;
-            Vector3 hoverEndPos = startPosition + Vector3.up * 0.5f;
-            
-            // 호버링 애니메이션
+    
+            // 1단계: 위로 높이 올라가는 단계
+            float riseHeight = 5f;
+            Vector3 risePosition = startPosition + Vector3.up * riseHeight;
+            float riseTime = duration * 0.2f;
+    
             float elapsed = 0f;
-            while (elapsed < hoverTime)
+            while (elapsed < riseTime)
             {
-                meteor.transform.position = Vector3.Lerp(hoverStartPos, hoverEndPos, elapsed / hoverTime);
+                meteor.transform.position = Vector3.Lerp(startPosition, risePosition, elapsed / riseTime);
                 elapsed += Time.deltaTime;
                 yield return null;
             }
-            
-            // 메테오가 목표를 향해 날아가는 애니메이션
+    
+            // 2단계: 잠시 멈추는 단계
+            float hoverTime = duration * 0.3f;
+            yield return new WaitForSeconds(hoverTime);
+    
+            // 3단계: 목표 위치로 직선으로 날아가는 단계
+            float fallTime = duration * 0.5f;
             elapsed = 0f;
             Vector3 initialScale = meteor.transform.localScale;
             Vector3 finalScale = initialScale * 1.5f; // 날아가면서 약간 커짐
-            
-            while (elapsed < duration)
+    
+            while (elapsed < fallTime)
             {
-                // 위치 보간 (포물선 효과 추가)
-                float t = elapsed / duration;
-                float height = Mathf.Sin(t * Mathf.PI) * 3f; // 포물선 높이
-                
-                Vector3 horizontalPos = Vector3.Lerp(hoverEndPos, targetPosition, t);
-                Vector3 verticalOffset = Vector3.up * height;
-                meteor.transform.position = horizontalPos + verticalOffset;
-                
+                float t = elapsed / fallTime;
+        
+                // 직선 이동
+                meteor.transform.position = Vector3.Lerp(risePosition, targetPosition, t);
+        
                 // 크기 보간 (날아가면서 커짐)
                 meteor.transform.localScale = Vector3.Lerp(initialScale, finalScale, t);
-                
+        
                 // 메테오 회전 효과
                 meteor.transform.Rotate(Vector3.forward, 360f * Time.deltaTime);
-                
+        
                 elapsed += Time.deltaTime;
                 yield return null;
             }
-            
+    
             // 메테오 파괴
             Destroy(meteor);
+        }
+        /// <summary>
+        /// 매직 소드 애니메이션 처리
+        /// </summary>
+        /// <summary>
+        /// 매직 소드 애니메이션 처리
+        /// </summary>
+        private IEnumerator MagicSwordAnimation(Vector3 targetPosition, float waitTime)
+        {
+            // 매직 소드 생성 (몬스터 머리 위에 생성)
+            Vector3 startPosition = transform.position + Vector3.up * meteorHoverHeight;
+            GameObject sword = Instantiate(magicSwordPrefab, startPosition, Quaternion.identity);
+    
+            // 타겟 방향으로 회전 (시작부터 설정)
+            Vector3 direction = (targetPosition - startPosition).normalized;
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+            sword.transform.rotation = Quaternion.Euler(0, 0, angle - 90);
+    
+            // 총 애니메이션 시간을 waitTime에 맞춤
+            float totalAnimTime = waitTime;
+    
+            // 1단계: 위로 올라가는 시간 (총 시간의 20%)
+            float riseTime = totalAnimTime * 0.2f;
+            float riseHeight = 4f;
+            Vector3 risePosition = startPosition + Vector3.up * riseHeight;
+    
+            float elapsed = 0f;
+            while (elapsed < riseTime)
+            {
+                sword.transform.position = Vector3.Lerp(startPosition, risePosition, elapsed / riseTime);
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+    
+            // 2단계: 정지 단계 (총 시간의 50%)
+            float hoverTime = totalAnimTime * 0.5f;
+            yield return new WaitForSeconds(hoverTime);
+    
+            // 3단계: 타겟까지 빠르게 이동 (총 시간의 30%)
+            float fallTime = totalAnimTime * 0.3f;
+            elapsed = 0f;
+    
+            while (elapsed < fallTime)
+            {
+                float t = elapsed / fallTime;
+        
+                // 이징 적용 (가속도 효과)
+                float easedT = 1f - Mathf.Pow(1f - t, 2f);
+        
+                // 직선 이동
+                sword.transform.position = Vector3.Lerp(risePosition, targetPosition, easedT);
+        
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+    
+            // 최종 위치로 설정
+            sword.transform.position = targetPosition;
+            
+            Destroy(sword);
         }
     }
 }

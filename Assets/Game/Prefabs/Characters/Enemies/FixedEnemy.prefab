@@ -56,6 +56,8 @@ MonoBehaviour:
   meteorPrefab: {fileID: 5816042405131102538, guid: fe779e50ad70be1438c5e7e9dc1b1f10, type: 3}
   meteorHoverHeight: 2
   meteorTravelDuration: 1.5
+  magicSwordPrefab: {fileID: 5816042405131102538, guid: 6c04733f9ec8a9f418b7a96cc5f4888b, type: 3}
+  swordTravelDuration: 1
 --- !u!61 &4193031084251287229
 BoxCollider2D:
   m_ObjectHideFlags: 0

@@ -18,7 +18,7 @@ MonoBehaviour:
   _shapeType: 1
   _tileType: 0
   _chargeTime: 5
-  _damage: 20
+  _damage: 15
   _invincibilityDuration: 5
   _healAmount: 10
   _obstacleDuration: 5

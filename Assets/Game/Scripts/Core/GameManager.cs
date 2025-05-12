@@ -28,7 +28,6 @@ namespace Game.Scripts.Core
         private PlayerHealth _playerHealth;
         private GameStateManager _gameStateManager;
         public GameObject highlightTilePrefab;
-        private bool _gameStarted = false;
         
         void Start()
         {
@@ -93,8 +92,7 @@ namespace Game.Scripts.Core
             }
     
             TimeScaleManager.Instance.ResetTimeScale();
-    
-            _gameStarted = true;
+            
     
             // 게임 시작 상태로 설정
             _gameStateManager.StartGame();
