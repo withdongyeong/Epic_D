@@ -136,6 +136,7 @@ namespace Game.Scripts.Inventory
         {
             // 템플릿 복제
             _itemData = _itemDataTemplate.Clone();
+            _itemData.UpdateShapeFromType();
             
             // 시각화 및 드래그 핸들러 초기화
             _visualizer?.Initialize(_itemData);
