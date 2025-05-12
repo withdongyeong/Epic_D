@@ -98,14 +98,13 @@ namespace Game.Scripts.Characters.Enemies
         }
         
         /// <summary>
-        /// 플레이어에게 데미지 적용 및 이펙트 표시
+        /// 플레이어에게 데미지 적용
         /// </summary>
         private void ApplyDamageWithEffect(int damage)
         {
             if (_playerHealth != null)
             {
                 _playerHealth.TakeDamage(damage);
-                CreateDamageEffect(_player.transform.position);
             }
         }
         
@@ -263,14 +262,14 @@ namespace Game.Scripts.Characters.Enemies
         /// </summary>
         private IEnumerator RapidFirePattern()
         {
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 4; i++)
             {
                 Vector3 direction = (_player.transform.position - transform.position).normalized;
                 GameObject projectileObj = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
                 Projectile projectile = projectileObj.GetComponent<Projectile>();
                 projectile.Initialize(direction, Projectile.ProjectileTeam.Enemy);
             
-                yield return new WaitForSeconds(0.3f);
+                yield return new WaitForSeconds(0.4f);
             }
         }
     
